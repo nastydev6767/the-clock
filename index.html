@@ -27,14 +27,14 @@
             overflow: hidden;
         }
 
-        /* Navigation Dock (Bottom) */
+        /* Navigation Dock */
         nav {
             background: rgba(10, 10, 12, 0.95);
             backdrop-filter: blur(20px);
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
-            padding: 15px 0 35px 0; /* Padding for mobile home bars */
+            padding: 15px 0 35px 0;
             position: fixed;
             bottom: 0;
             width: 100%;
@@ -50,7 +50,7 @@
         nav button.active { color: var(--accent); font-weight: 800; }
 
         .tab-content {
-            flex: 1; display: none; padding: 40px 20px 120px 20px; /* Extra bottom padding for dock */
+            flex: 1; display: none; padding: 40px 20px 120px 20px;
             flex-direction: column; align-items: center; justify-content: center;
             overflow-y: auto;
         }
@@ -60,7 +60,7 @@
         .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 20px; opacity: 0.6; }
         .big-time { font-size: 4.5rem; font-weight: 800; margin: 10px 0; font-variant-numeric: tabular-nums; }
         
-        /* Search Bar & Suggestions */
+        /* Search */
         .search-wrapper { width: 100%; max-width: 350px; position: relative; margin-top: 20px; }
         .search-box {
             width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border);
@@ -72,33 +72,42 @@
             display: none; z-index: 10;
         }
         .suggestions div { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); cursor: pointer; }
-        .suggestions strong { display: block; color: var(--accent); font-size: 0.9rem; }
-        .suggestions small { color: var(--secondary); font-size: 0.7rem; }
+        .suggestions strong { display: block; color: var(--accent); }
 
-        /* UI Elements */
+        /* Controls */
         .controls { display: flex; gap: 15px; margin-top: 30px; }
-        .btn { padding: 15px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 600; }
-        .btn-main { background: var(--accent); color: black; border: none; }
-        .btn-danger { background: var(--danger); color: black; border: none; }
-        
+        .btn { padding: 15px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-main { background: var(--accent) !important; color: #000 !important; border: none; }
+        .btn-danger { background: var(--danger) !important; color: #000 !important; border: none; }
+
         #laps-list { width: 100%; max-width: 300px; margin-top: 20px; max-height: 150px; overflow-y: auto; }
-        .lap-entry { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .lap-entry { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        
+        .stop-sound-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 71, 87, 0.2); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000;
+        }
     </style>
 </head>
 <body>
 
-    <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_loop.ogg" loop></audio>
-    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_loop.ogg" loop></audio>
+    <audio id="timer-beep" src="timer.mp3" preload="auto" loop></audio>
+    <audio id="alarm-beep" src="alarm.mp3" preload="auto" loop></audio>
+
+    <div id="stop-overlay" class="stop-sound-overlay">
+        <h1 style="color:white; margin-bottom: 20px;">TIME'S UP!</h1>
+        <button class="btn btn-danger" onclick="stopAllSounds()">STOP SOUND</button>
+    </div>
 
     <div id="clock-tab" class="tab-content active-tab">
         <div class="brand">THE CLOCK</div>
         <div id="location" style="color: var(--accent)">Local Time</div>
         <div id="main-clock" class="big-time">00:00:00</div>
         <div id="main-date" style="color: var(--secondary)">---</div>
-
         <div class="search-wrapper">
             <div id="suggestions" class="suggestions"></div>
-            <input type="text" id="city-search" class="search-box" placeholder="Connecting to Global Data..." disabled autocomplete="off">
+            <input type="text" id="city-search" class="search-box" placeholder="Loading Data..." disabled autocomplete="off">
         </div>
     </div>
 
@@ -113,8 +122,8 @@
         <div class="brand">TIMER</div>
         <div id="timer-display" class="big-time">00:00</div>
         <div id="timer-inputs" style="display:flex; gap:10px; align-items:center;">
-            <input type="number" id="t-min" class="search-box" style="width:60px" placeholder="M">
-            <input type="number" id="t-sec" class="search-box" style="width:60px" placeholder="S">
+            <input type="number" id="t-min" class="search-box" style="width:70px" placeholder="MIN">
+            <input type="number" id="t-sec" class="search-box" style="width:70px" placeholder="SEC">
         </div>
         <div class="controls">
             <button class="btn" onclick="resetTimer()">Reset</button>
@@ -140,18 +149,22 @@
         <button id="n-stopwatch" onclick="showTab('stopwatch')">Lap</button>
     </nav>
 
-    <button id="stop-sound" class="btn btn-danger" style="position:fixed; top:20px; right:20px; display:none; z-index:2000;" onclick="stopBeep()">STOP SOUND</button>
-
     <script>
-        // GLOBAL STATE
         let flatCities = [], activeTz = Intl.DateTimeFormat().resolvedOptions().timeZone, activeName = "Local Time";
         let swStart, swInterval, swElapsed = 0, lapCount = 0;
         let timerInt, timeLeft = 0;
         let alarms = JSON.parse(localStorage.getItem('alarms')) || [];
+        const timerAudio = document.getElementById('timer-beep');
+        const alarmAudio = document.getElementById('alarm-beep');
 
-        // 1. WORLD DATA ENGINE (dr5hn CDN)
+        // AUDIO UNLOCK Logic
+        function unlockAudio() {
+            [timerAudio, alarmAudio].forEach(a => {
+                a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+            });
+        }
+
         async function initData() {
-            const input = document.getElementById('city-search');
             try {
                 const res = await fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json');
                 const data = await res.json();
@@ -162,32 +175,13 @@
                         });
                     });
                 });
-                input.placeholder = "Search (Goa, Haryana, London...)";
-                input.disabled = false;
-            } catch (e) { input.placeholder = "Data Connection Error"; }
+                document.getElementById('city-search').placeholder = "Search Cities...";
+                document.getElementById('city-search').disabled = false;
+            } catch (e) { console.error("Data fail"); }
         }
 
-        const citySearch = document.getElementById('city-search');
-        const suggBox = document.getElementById('suggestions');
-
-        citySearch.addEventListener('input', () => {
-            const val = citySearch.value.toLowerCase().trim();
-            suggBox.innerHTML = '';
-            if (val.length < 2) { suggBox.style.display = 'none'; return; }
-            const matches = flatCities.filter(c => c.n.toLowerCase().includes(val) || c.s.toLowerCase().includes(val)).slice(0, 10);
-            if (matches.length > 0) {
-                suggBox.style.display = 'block';
-                matches.forEach(m => {
-                    const div = document.createElement('div');
-                    div.innerHTML = `<strong>${m.n}</strong><small>${m.s}, ${m.c}</small>`;
-                    div.onclick = () => { activeTz = m.z; activeName = m.n; citySearch.value = ''; suggBox.style.display = 'none'; };
-                    suggBox.append(div);
-                });
-            }
-        });
-
-        // 2. NAV & CLOCK
         function showTab(t) {
+            unlockAudio(); // Unlock on every tab switch
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
             document.getElementById(t + '-tab').classList.add('active-tab');
@@ -201,31 +195,47 @@
             document.getElementById('main-date').textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
             document.getElementById('location').textContent = activeName;
             
-            // Check Alarms
             const curTime = now.toLocaleTimeString('en-GB', { hour12: false }).slice(0,5);
-            alarms.forEach(a => { if(a.active && a.time === curTime) triggerAlarm(); });
+            alarms.forEach(a => { if(a.active && a.time === curTime) triggerAlert(alarmAudio); });
         }
 
-        // 3. STOPWATCH & TIMER & ALARM (Functional)
+        // Search logic
+        document.getElementById('city-search').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+            const sugg = document.getElementById('suggestions');
+            sugg.innerHTML = '';
+            if (val.length < 2) { sugg.style.display = 'none'; return; }
+            const matches = flatCities.filter(c => c.n.toLowerCase().includes(val)).slice(0, 5);
+            if (matches.length > 0) {
+                sugg.style.display = 'block';
+                matches.forEach(m => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<strong>${m.n}</strong><small>${m.s}</small>`;
+                    div.onclick = () => { activeTz = m.z; activeName = m.n; e.target.value = ''; sugg.style.display = 'none'; };
+                    sugg.append(div);
+                });
+            }
+        });
+
         function toggleSW() {
             const btn = document.getElementById('sw-btn');
-            const lapBtn = document.getElementById('lap-btn');
+            const lp = document.getElementById('lap-btn');
             if (btn.textContent === "Start") {
                 swStart = Date.now() - swElapsed;
                 swInterval = setInterval(() => {
                     swElapsed = Date.now() - swStart;
-                    const ms = Math.floor((swElapsed % 1000) / 10), s = Math.floor((swElapsed / 1000) % 60), m = Math.floor(swElapsed / 60000);
+                    const ms = Math.floor((swElapsed%1000)/10), s = Math.floor((swElapsed/1000)%60), m = Math.floor(swElapsed/60000);
                     document.getElementById('sw-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
                 }, 10);
-                btn.textContent = "Stop"; btn.className = "btn btn-danger"; lapBtn.style.display = "block";
-            } else { clearInterval(swInterval); btn.textContent = "Start"; btn.className = "btn btn-main"; lapBtn.style.display = "none"; }
+                btn.textContent = "Stop"; btn.className = "btn btn-danger"; lp.style.display = "block";
+            } else { clearInterval(swInterval); btn.textContent = "Start"; btn.className = "btn btn-main"; lp.style.display = "none"; }
         }
 
         function recordLap() {
             lapCount++;
             const entry = document.createElement('div');
             entry.className = 'lap-entry';
-            entry.innerHTML = `<span style="color:var(--secondary)">Lap ${lapCount}</span> <span>${document.getElementById('sw-display').textContent}</span>`;
+            entry.innerHTML = `<span>Lap ${lapCount}</span><span>${document.getElementById('sw-display').textContent}</span>`;
             document.getElementById('laps-list').prepend(entry);
         }
 
@@ -241,15 +251,15 @@
                     timeLeft--;
                     const min = Math.floor(timeLeft/60), sec = timeLeft%60;
                     document.getElementById('timer-display').textContent = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-                    if(timeLeft <= 0) { clearInterval(timerInt); triggerAlarm(); btn.textContent = "Start"; }
+                    if(timeLeft <= 0) { clearInterval(timerInt); triggerAlert(timerAudio); btn.textContent = "Start"; }
                 }, 1000);
                 btn.textContent = "Pause";
             } else { clearInterval(timerInt); btn.textContent = "Start"; }
         }
 
-        function triggerAlarm() { document.getElementById('beep').play(); document.getElementById('stop-sound').style.display = 'block'; }
-        function stopBeep() { document.getElementById('beep').pause(); document.getElementById('beep').currentTime = 0; document.getElementById('stop-sound').style.display = 'none'; }
-        function resetTimer() { clearInterval(timerInt); document.getElementById('timer-inputs').style.display = 'flex'; document.getElementById('timer-display').textContent = "00:00"; stopBeep(); }
+        function triggerAlert(audio) { audio.play(); document.getElementById('stop-overlay').style.display = 'flex'; }
+        function stopAllSounds() { [timerAudio, alarmAudio].forEach(a => { a.pause(); a.currentTime = 0; }); document.getElementById('stop-overlay').style.display = 'none'; }
+        function resetTimer() { clearInterval(timerInt); document.getElementById('timer-inputs').style.display = 'flex'; document.getElementById('timer-display').textContent = "00:00"; stopAllSounds(); }
 
         function addAlarm() {
             const t = document.getElementById('new-alarm-time').value;
@@ -261,19 +271,4 @@
 
         function renderAlarms() {
             const list = document.getElementById('alarm-list'); list.innerHTML = '';
-            alarms.forEach(a => {
-                const div = document.createElement('div');
-                div.style.cssText = "display:flex; justify-content:space-between; padding:15px; background:var(--panel); border-radius:15px; margin-bottom:10px; border:1px solid var(--border)";
-                div.innerHTML = `<strong>${a.time}</strong><button onclick="removeAlarm(${a.id})" style="background:none; border:none; color:var(--danger)">Delete</button>`;
-                list.appendChild(div);
-            });
-        }
-        function removeAlarm(id) { alarms = alarms.filter(a => a.id !== id); localStorage.setItem('alarms', JSON.stringify(alarms)); renderAlarms(); }
-
-        // INIT
-        setInterval(tick, 1000);
-        initData();
-        renderAlarms();
-    </script>
-</body>
-</html>
+            alarms.
