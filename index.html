@@ -5,143 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Clock</title>
     <style>
-        :root {
-            --bg: #050505;
-            --panel: #121214;
-            --accent: #34d399;
-            --text: #e2e8f0;
-            --secondary: #64748b;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding-top: 50px;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 450px;
-            background: var(--panel);
-            padding: 2.5rem;
-            border-radius: 35px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-            border: 1px solid #222;
-            text-align: center;
-        }
-
-        .brand {
-            font-size: 1.2rem;
-            font-weight: 300;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 30px;
-            opacity: 0.8;
-        }
-
-        .search-container {
-            position: relative;
-            margin-bottom: 40px;
-        }
-
-        input {
-            width: 100%;
-            padding: 18px 20px;
-            border-radius: 18px;
-            border: 1px solid #333;
-            background: #1a1a1c;
-            color: white;
-            font-size: 1rem;
-            box-sizing: border-box;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
-        }
-
-        .suggestions {
-            position: absolute;
-            top: 70px;
-            left: 0;
-            right: 0;
-            background: #1a1a1c;
-            border: 1px solid #333;
-            border-radius: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            text-align: left;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
-        }
-
-        .suggestions div {
-            padding: 14px 20px;
-            cursor: pointer;
-            border-bottom: 1px solid #222;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .suggestions div:hover {
-            background: #252529;
-        }
-
-        .suggestions strong { color: var(--accent); }
-        .suggestions small { color: var(--secondary); margin-top: 4px; }
-
-        .main-display { margin-top: 20px; }
-
-        #clock {
-            font-size: 5rem;
-            font-weight: 900;
-            margin: 10px 0;
-            letter-spacing: -2px;
-            font-variant-numeric: tabular-nums;
-            color: #fff;
-        }
-
-        #location {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--accent);
-        }
-
-        #date {
-            font-size: 1rem;
-            color: var(--secondary);
-            margin-top: 5px;
-        }
-
-        /* Custom Scrollbar */
-        .suggestions::-webkit-scrollbar { width: 6px; }
-        .suggestions::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        :root { --bg: #050505; --panel: #121214; --accent: #34d399; --text: #e2e8f0; --secondary: #64748b; }
+        body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding-top: 50px; }
+        .container { width: 90%; max-width: 450px; background: var(--panel); padding: 2.5rem; border-radius: 35px; border: 1px solid #222; text-align: center; }
+        .brand { font-size: 1.2rem; letter-spacing: 6px; text-transform: uppercase; color: var(--accent); margin-bottom: 30px; }
+        input { width: 100%; padding: 18px; border-radius: 18px; border: 1px solid #333; background: #1a1a1c; color: white; outline: none; box-sizing: border-box; }
+        .suggestions { background: #1a1a1c; border: 1px solid #333; border-radius: 15px; max-height: 300px; overflow-y: auto; margin-top: 10px; display: none; text-align: left; }
+        .suggestions div { padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #222; display: flex; flex-direction: column; }
+        .suggestions div:hover { background: #252529; }
+        #clock { font-size: 5rem; font-weight: 900; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        #location { color: var(--accent); font-weight: 500; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="brand">The Clock</div>
-
-    <div class="search-container">
-        <input type="text" id="search" placeholder="Initializing database..." disabled autocomplete="off">
-        <div id="suggestions" class="suggestions"></div>
-    </div>
-
-    <div class="main-display">
-        <div id="location">Detecting...</div>
-        <div id="clock">00:00:00</div>
-        <div id="date">---</div>
-    </div>
+    <input type="text" id="search" placeholder="Connecting to Global Database..." disabled>
+    <div id="suggestions" class="suggestions"></div>
+    <div id="location">Detecting...</div>
+    <div id="clock">00:00:00</div>
+    <div id="date">---</div>
 </div>
 
 <script>
@@ -149,15 +32,13 @@
     let activeTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     let activeName = "Local Time";
 
-    // 1. Fetch the v3.1 Data from your local/GitHub JSON file
     async function loadData() {
         const input = document.getElementById('search');
         try {
-            // Ensure this file name matches exactly what you uploaded
-            const res = await fetch('countries+states+cities.json');
+            // Pulling directly from dr5hn's cloud database
+            const res = await fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json');
             const data = await res.json();
             
-            // 2. Flattening Logic: This allows searching for "Haryana" or "Kurukshetra"
             data.forEach(country => {
                 country.states.forEach(state => {
                     state.cities.forEach(city => {
@@ -165,98 +46,50 @@
                             cityName: city.name,
                             stateName: state.name,
                             countryName: country.name,
-                            // Use city timezone or fallback to country timezone
-                            tz: city.timezone || country.timezones.zoneName
+                            tz: city.timezone || (country.timezones && country.timezones.zoneName) || "UTC"
                         });
                     });
                 });
             });
-
-            input.placeholder = "Search (e.g. Haryana, Goa, Beijing)";
+            input.placeholder = "Search (Goa, Haryana, Kurukshetra...)";
             input.disabled = false;
-            updateDisplay();
-        } catch (err) {
-            input.placeholder = "Error: JSON not found";
-            console.error(err);
-        }
+        } catch (err) { input.placeholder = "Load Error"; }
     }
 
-    const searchInput = document.getElementById('search');
-    const suggBox = document.getElementById('suggestions');
+    const input = document.getElementById('search');
+    const sugg = document.getElementById('suggestions');
 
-    // 3. Smart Search Filter
-    searchInput.addEventListener('input', () => {
-        const val = searchInput.value.toLowerCase().trim();
-        suggBox.innerHTML = '';
-        
-        if (val.length < 2) {
-            suggBox.style.display = 'none';
-            return;
-        }
-
+    input.addEventListener('input', () => {
+        const val = input.value.toLowerCase().trim();
+        sugg.innerHTML = '';
+        if (val.length < 2) { sugg.style.display = 'none'; return; }
         const matches = flatCities.filter(c => 
-            c.cityName.toLowerCase().includes(val) || 
-            c.stateName.toLowerCase().includes(val) || 
-            c.countryName.toLowerCase().includes(val)
-        ).slice(0, 30); // Show top 30 results
-
+            c.cityName.toLowerCase().includes(val) || c.stateName.toLowerCase().includes(val)
+        ).slice(0, 20);
         if (matches.length > 0) {
-            suggBox.style.display = 'block';
+            sugg.style.display = 'block';
             matches.forEach(m => {
                 const div = document.createElement('div');
-                div.innerHTML = `
-                    <strong>${m.cityName}</strong>
-                    <small>${m.stateName}, ${m.countryName}</small>
-                `;
+                div.innerHTML = `<strong>${m.cityName}</strong><small>${m.stateName}, ${m.countryName}</small>`;
                 div.onclick = () => {
-                    activeTz = m.tz;
-                    activeName = m.cityName;
-                    searchInput.value = '';
-                    suggBox.style.display = 'none';
-                    updateDisplay();
+                    activeTz = m.tz; activeName = m.cityName;
+                    input.value = ''; sugg.style.display = 'none';
                 };
-                suggBox.append(div);
+                sugg.append(div);
             });
         }
     });
 
-    // 4. The Clock Engine
-    function updateDisplay() {
+    function tick() {
         const now = new Date();
-        const timeOptions = { 
-            timeZone: activeTz, 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit', 
-            hour12: false 
-        };
-        const dateOptions = { 
-            timeZone: activeTz, 
-            weekday: 'long', 
-            day: 'numeric', 
-            month: 'long' 
-        };
-
-        try {
-            document.getElementById('clock').textContent = new Intl.DateTimeFormat('en-GB', timeOptions).format(now);
-            document.getElementById('date').textContent = new Intl.DateTimeFormat('en-GB', dateOptions).format(now);
-            document.getElementById('location').textContent = activeName;
-        } catch (e) {
-            console.warn("Timezone error fallback");
-        }
+        const tOpt = { timeZone: activeTz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const dOpt = { timeZone: activeTz, weekday: 'long', day: 'numeric', month: 'long' };
+        document.getElementById('clock').textContent = new Intl.DateTimeFormat('en-GB', tOpt).format(now);
+        document.getElementById('date').textContent = new Intl.DateTimeFormat('en-GB', dOpt).format(now);
+        document.getElementById('location').textContent = activeName;
     }
-
-    // Refresh every second
-    setInterval(updateDisplay, 1000);
-
-    // Initial Load
+    setInterval(tick, 1000);
     loadData();
-
-    // Close suggestions on outside click
-    document.addEventListener('click', (e) => {
-        if (e.target !== searchInput) suggBox.style.display = 'none';
-    });
 </script>
-
 </body>
 </html>
