@@ -1,274 +1,142 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Clock</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #050507;
-            --panel: rgba(255, 255, 255, 0.04);
-            --accent: #00ffa3;
-            --text: #ffffff;
-            --secondary: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
-            --danger: #ff4757;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Clock</title>
 
-        body {
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0b0b0f;
+    color: white;
+    text-align: center;
+}
 
-        /* Navigation Dock */
-        nav {
-            background: rgba(10, 10, 12, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            padding: 15px 0 35px 0;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            z-index: 1000;
-        }
+.big-time {
+    font-size: 3rem;
+    margin-top: 40px;
+}
 
-        nav button {
-            background: none; border: none; color: var(--secondary);
-            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; transition: 0.3s;
-        }
+.search-box {
+    margin-top: 20px;
+    padding: 10px;
+    width: 250px;
+}
 
-        nav button.active { color: var(--accent); font-weight: 800; }
+.suggestions {
+    background: #111;
+    max-width: 250px;
+    margin: auto;
+    text-align: left;
+}
 
-        .tab-content {
-            flex: 1; display: none; padding: 40px 20px 120px 20px;
-            flex-direction: column; align-items: center; justify-content: center;
-            overflow-y: auto;
-        }
+.suggestions div {
+    padding: 8px;
+    cursor: pointer;
+}
 
-        .active-tab { display: flex; }
-
-        .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 20px; opacity: 0.6; }
-        .big-time { font-size: 4.5rem; font-weight: 800; margin: 10px 0; font-variant-numeric: tabular-nums; }
-        
-        /* Search */
-        .search-wrapper { width: 100%; max-width: 350px; position: relative; margin-top: 20px; }
-        .search-box {
-            width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border);
-            background: var(--panel); color: white; outline: none; font-size: 0.9rem;
-        }
-        .suggestions {
-            position: absolute; bottom: 60px; left: 0; right: 0; background: #161618;
-            border-radius: 15px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border);
-            display: none; z-index: 10;
-        }
-        .suggestions div { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); cursor: pointer; }
-        .suggestions strong { display: block; color: var(--accent); }
-
-        /* Controls */
-        .controls { display: flex; gap: 15px; margin-top: 30px; }
-        .btn { padding: 15px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-main { background: var(--accent) !important; color: #000 !important; border: none; }
-        .btn-danger { background: var(--danger) !important; color: #000 !important; border: none; }
-
-        #laps-list { width: 100%; max-width: 300px; margin-top: 20px; max-height: 150px; overflow-y: auto; }
-        .lap-entry { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        
-        .stop-sound-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 71, 87, 0.2); backdrop-filter: blur(5px);
-            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000;
-        }
-    </style>
+.suggestions div:hover {
+    background: #222;
+}
+</style>
 </head>
+
 <body>
 
-    <audio id="timer-beep" src="timer.mp3" preload="auto" loop></audio>
-    <audio id="alarm-beep" src="alarm.mp3" preload="auto" loop></audio>
+<h2 id="location">Local Time</h2>
+<div id="clock" class="big-time">00:00:00</div>
 
-    <div id="stop-overlay" class="stop-sound-overlay">
-        <h1 style="color:white; margin-bottom: 20px;">TIME'S UP!</h1>
-        <button class="btn btn-danger" onclick="stopAllSounds()">STOP SOUND</button>
-    </div>
+<input id="city-search" class="search-box" placeholder="Loading data..." disabled>
+<div id="suggestions" class="suggestions"></div>
 
-    <div id="clock-tab" class="tab-content active-tab">
-        <div class="brand">THE CLOCK</div>
-        <div id="location" style="color: var(--accent)">Local Time</div>
-        <div id="main-clock" class="big-time">00:00:00</div>
-        <div id="main-date" style="color: var(--secondary)">---</div>
-        <div class="search-wrapper">
-            <div id="suggestions" class="suggestions"></div>
-            <input type="text" id="city-search" class="search-box" placeholder="Loading Data..." disabled autocomplete="off">
-        </div>
-    </div>
+<script>
+let flatCities = [];
+let activeTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+let activeName = "Local Time";
 
-    <div id="alarm-tab" class="tab-content">
-        <div class="brand">ALARM</div>
-        <div id="alarm-list" style="width:100%; max-width:300px;"></div>
-        <input type="time" id="new-alarm-time" class="search-box" style="margin-top:20px; text-align:center; font-size:1.5rem;">
-        <button class="btn btn-main" style="margin-top:15px;" onclick="addAlarm()">+ Add Alarm</button>
-    </div>
+// CLOCK
+function updateClock() {
+    const now = new Date();
+    const time = now.toLocaleTimeString("en-GB", {
+        timeZone: activeTz
+    });
 
-    <div id="timer-tab" class="tab-content">
-        <div class="brand">TIMER</div>
-        <div id="timer-display" class="big-time">00:00</div>
-        <div id="timer-inputs" style="display:flex; gap:10px; align-items:center;">
-            <input type="number" id="t-min" class="search-box" style="width:70px" placeholder="MIN">
-            <input type="number" id="t-sec" class="search-box" style="width:70px" placeholder="SEC">
-        </div>
-        <div class="controls">
-            <button class="btn" onclick="resetTimer()">Reset</button>
-            <button class="btn btn-main" id="timer-btn" onclick="toggleTimer()">Start</button>
-        </div>
-    </div>
+    document.getElementById("clock").textContent = time;
+    document.getElementById("location").textContent = activeName;
+}
 
-    <div id="stopwatch-tab" class="tab-content">
-        <div class="brand">STOPWATCH</div>
-        <div id="sw-display" class="big-time">00:00.00</div>
-        <div id="laps-list"></div>
-        <div class="controls">
-            <button class="btn" onclick="resetSW()">Reset</button>
-            <button class="btn" id="lap-btn" onclick="recordLap()" style="display:none">Lap</button>
-            <button class="btn btn-main" id="sw-btn" onclick="toggleSW()">Start</button>
-        </div>
-    </div>
+setInterval(updateClock, 1000);
 
-    <nav>
-        <button id="n-clock" class="active" onclick="showTab('clock')">Clock</button>
-        <button id="n-alarm" onclick="showTab('alarm')">Alarm</button>
-        <button id="n-timer" onclick="showTab('timer')">Timer</button>
-        <button id="n-stopwatch" onclick="showTab('stopwatch')">Lap</button>
-    </nav>
+// LOAD DATA
+async function initData() {
+    const input = document.getElementById("city-search");
 
-    <script>
-        let flatCities = [], activeTz = Intl.DateTimeFormat().resolvedOptions().timeZone, activeName = "Local Time";
-        let swStart, swInterval, swElapsed = 0, lapCount = 0;
-        let timerInt, timeLeft = 0;
-        let alarms = JSON.parse(localStorage.getItem('alarms')) || [];
-        const timerAudio = document.getElementById('timer-beep');
-        const alarmAudio = document.getElementById('alarm-beep');
+    try {
+        const res = await fetch("https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json");
+        const data = await res.json();
 
-        // AUDIO UNLOCK Logic
-        function unlockAudio() {
-            [timerAudio, alarmAudio].forEach(a => {
-                a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
-            });
-        }
-
-        async function initData() {
-            try {
-                const res = await fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json');
-                const data = await res.json();
-                data.forEach(country => {
-                    country.states.forEach(state => {
-                        state.cities.forEach(city => {
-                            flatCities.push({ n: city.name, s: state.name, c: country.name, z: city.timezone || country.timezones.zoneName });
+        data.forEach(country => {
+            country.states.forEach(state => {
+                state.cities.forEach(city => {
+                    if (country.timezones && country.timezones.length > 0) {
+                        flatCities.push({
+                            name: city.name,
+                            state: state.name,
+                            country: country.name,
+                            tz: country.timezones[0].zoneName
                         });
-                    });
+                    }
                 });
-                document.getElementById('city-search').placeholder = "Search Cities...";
-                document.getElementById('city-search').disabled = false;
-            } catch (e) { console.error("Data fail"); }
-        }
-
-        function showTab(t) {
-            unlockAudio(); // Unlock on every tab switch
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
-            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-            document.getElementById(t + '-tab').classList.add('active-tab');
-            document.getElementById('n-' + t).classList.add('active');
-        }
-
-        function tick() {
-            const now = new Date();
-            const tOpt = { timeZone: activeTz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            document.getElementById('main-clock').textContent = new Intl.DateTimeFormat('en-GB', tOpt).format(now);
-            document.getElementById('main-date').textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
-            document.getElementById('location').textContent = activeName;
-            
-            const curTime = now.toLocaleTimeString('en-GB', { hour12: false }).slice(0,5);
-            alarms.forEach(a => { if(a.active && a.time === curTime) triggerAlert(alarmAudio); });
-        }
-
-        // Search logic
-        document.getElementById('city-search').addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase().trim();
-            const sugg = document.getElementById('suggestions');
-            sugg.innerHTML = '';
-            if (val.length < 2) { sugg.style.display = 'none'; return; }
-            const matches = flatCities.filter(c => c.n.toLowerCase().includes(val)).slice(0, 5);
-            if (matches.length > 0) {
-                sugg.style.display = 'block';
-                matches.forEach(m => {
-                    const div = document.createElement('div');
-                    div.innerHTML = `<strong>${m.n}</strong><small>${m.s}</small>`;
-                    div.onclick = () => { activeTz = m.z; activeName = m.n; e.target.value = ''; sugg.style.display = 'none'; };
-                    sugg.append(div);
-                });
-            }
+            });
         });
 
-        function toggleSW() {
-            const btn = document.getElementById('sw-btn');
-            const lp = document.getElementById('lap-btn');
-            if (btn.textContent === "Start") {
-                swStart = Date.now() - swElapsed;
-                swInterval = setInterval(() => {
-                    swElapsed = Date.now() - swStart;
-                    const ms = Math.floor((swElapsed%1000)/10), s = Math.floor((swElapsed/1000)%60), m = Math.floor(swElapsed/60000);
-                    document.getElementById('sw-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
-                }, 10);
-                btn.textContent = "Stop"; btn.className = "btn btn-danger"; lp.style.display = "block";
-            } else { clearInterval(swInterval); btn.textContent = "Start"; btn.className = "btn btn-main"; lp.style.display = "none"; }
-        }
+        input.placeholder = "Search city...";
+        input.disabled = false;
 
-        function recordLap() {
-            lapCount++;
-            const entry = document.createElement('div');
-            entry.className = 'lap-entry';
-            entry.innerHTML = `<span>Lap ${lapCount}</span><span>${document.getElementById('sw-display').textContent}</span>`;
-            document.getElementById('laps-list').prepend(entry);
-        }
+        console.log("Loaded cities:", flatCities.length);
 
-        function resetSW() { clearInterval(swInterval); swElapsed = 0; lapCount = 0; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('laps-list').innerHTML = ""; }
+    } catch (err) {
+        input.placeholder = "Failed to load data";
+        console.error(err);
+    }
+}
 
-        function toggleTimer() {
-            const btn = document.getElementById('timer-btn');
-            if(btn.textContent === "Start") {
-                const m = parseInt(document.getElementById('t-min').value)||0, s = parseInt(document.getElementById('t-sec').value)||0;
-                if(m===0 && s===0) return;
-                timeLeft = (m*60)+s; document.getElementById('timer-inputs').style.display = 'none';
-                timerInt = setInterval(() => {
-                    timeLeft--;
-                    const min = Math.floor(timeLeft/60), sec = timeLeft%60;
-                    document.getElementById('timer-display').textContent = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-                    if(timeLeft <= 0) { clearInterval(timerInt); triggerAlert(timerAudio); btn.textContent = "Start"; }
-                }, 1000);
-                btn.textContent = "Pause";
-            } else { clearInterval(timerInt); btn.textContent = "Start"; }
-        }
+// SEARCH
+const input = document.getElementById("city-search");
+const suggestions = document.getElementById("suggestions");
 
-        function triggerAlert(audio) { audio.play(); document.getElementById('stop-overlay').style.display = 'flex'; }
-        function stopAllSounds() { [timerAudio, alarmAudio].forEach(a => { a.pause(); a.currentTime = 0; }); document.getElementById('stop-overlay').style.display = 'none'; }
-        function resetTimer() { clearInterval(timerInt); document.getElementById('timer-inputs').style.display = 'flex'; document.getElementById('timer-display').textContent = "00:00"; stopAllSounds(); }
+input.addEventListener("input", () => {
+    const val = input.value.toLowerCase().trim();
+    suggestions.innerHTML = "";
 
-        function addAlarm() {
-            const t = document.getElementById('new-alarm-time').value;
-            if(!t) return;
-            alarms.push({id: Date.now(), time: t, active: true});
-            localStorage.setItem('alarms', JSON.stringify(alarms));
-            renderAlarms();
-        }
+    if (val.length < 2) {
+        return;
+    }
 
-        function renderAlarms() {
-            const list = document.getElementById('alarm-list'); list.innerHTML = '';
-            alarms.
+    const matches = flatCities
+        .filter(c => c.name.toLowerCase().includes(val))
+        .slice(0, 5);
+
+    matches.forEach(m => {
+        const div = document.createElement("div");
+        div.textContent = `${m.name}, ${m.state}`;
+        div.onclick = () => {
+            activeTz = m.tz;
+            activeName = m.name;
+            input.value = "";
+            suggestions.innerHTML = "";
+        };
+        suggestions.appendChild(div);
+    });
+});
+
+// INIT
+initData();
+</script>
+
+</body>
+</html>
+```
