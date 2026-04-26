@@ -78,12 +78,40 @@
             width: 60px; padding: 10px; background: var(--panel);
             border: 1px solid var(--border); color: white; border-radius: 10px; text-align: center;
         }
+
+        /* Laps List */
+        #laps-list {
+            width: 100%; max-width: 300px; margin-top: 20px; max-height: 150px; 
+            overflow-y: auto; border-top: 1px solid var(--border); padding-top: 15px;
+        }
+
+        .lap-entry {
+            display: flex; justify-content: space-between; padding: 10px 0; 
+            border-bottom: 1px solid var(--border); font-size: 0.9rem;
+        }
+
+        /* Alarm Form */
+        .alarm-form { width: 100%; max-width: 300px; margin-bottom: 20px; }
+        .alarm-form input { width: 100%; padding: 15px; background: var(--panel); border: 1px solid var(--border); color: white; border-radius: 10px; text-align: center; font-size: 1.5rem; }
+
+        /* Stop Sound Button */
+        .stop-sound { position: fixed; top: 20px; right: 20px; z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_loop.ogg"></audio>
+    <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_loop.ogg" loop></audio>
+    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_loop.ogg" loop></audio>
 
+    <!-- Navigation -->
+    <nav>
+        <button id="n-clock" class="active" onclick="showTab('clock')">Clock</button>
+        <button id="n-alarm" onclick="showTab('alarm')">Alarm</button>
+        <button id="n-timer" onclick="showTab('timer')">Timer</button>
+        <button id="n-stopwatch" onclick="showTab('stopwatch')">Stopwatch</button>
+    </nav>
+
+    <!-- CLOCK TAB -->
     <div id="clock-tab" class="tab-content active-tab">
         <div class="brand">THE CLOCK</div>
         <div id="location" style="color: var(--accent)">Local Time</div>
@@ -91,98 +119,63 @@
         <div id="main-date" style="color: var(--secondary)">---</div>
     </div>
 
+    <!-- ALARM TAB -->
     <div id="alarm-tab" class="tab-content">
         <div class="brand">ALARM</div>
         <div id="alarm-list" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <div class="alarm-item">
-                <div>
-                    <div style="font-size: 1.5rem; font-weight: 800;">07:00</div>
-                    <div style="font-size: 0.8rem; color: var(--secondary);">Daily</div>
-                </div>
-                <input type="checkbox" id="alarm-toggle">
-            </div>
+            <!-- Alarms will be added here -->
         </div>
-        <button class="btn btn-main" onclick="alert('Alarm feature: Set a time to trigger audio!')">+ Add Alarm</button>
+        <div class="alarm-form">
+            <input type="time" id="new-alarm-time" value="07:00">
+        </div>
+        <button class="btn btn-main" onclick="addAlarm()">+ Add Alarm</button>
     </div>
 
-   <div id="stopwatch-tab" class="tab-content">
-    <div class="brand">STOPWATCH</div>
-    <div id="sw-display" class="big-time">00:00.00</div>
-    
-    <div id="laps-list" style="width: 100%; max-width: 300px; margin-top: 20px; max-height: 150px; overflow-y: auto; border-top: 1px solid var(--border);">
+    <!-- TIMER TAB -->
+    <div id="timer-tab" class="tab-content">
+        <div class="brand">TIMER</div>
+        <div id="timer-display" class="big-time">00:00</div>
+        
+        <div id="timer-inputs" class="timer-input-group">
+            <input type="number" id="t-min" placeholder="0" min="0" max="99"> min
+            <input type="number" id="t-sec" placeholder="00" min="0" max="59"> sec
         </div>
-
-    <div class="controls">
-        <button class="btn" onclick="resetSW()">Reset</button>
-        <button class="btn" id="lap-btn" onclick="recordLap()" style="display:none">Lap</button>
-        <button class="btn btn-main" id="sw-btn" onclick="toggleSW()">Start</button>
+        
+        <div class="controls">
+            <button class="btn" onclick="resetTimer()">Reset</button>
+            <button class="btn btn-main" id="timer-btn" onclick="toggleTimer()">Start</button>
+        </div>
+        <button id="stop-sound" class="btn btn-danger stop-sound" onclick="stopBeep()" style="display:none;">Stop Sound</button>
     </div>
-</div>
 
-<script>
-    // Existing variables
-    let swStart, swInterval, swElapsed = 0;
-    let lapCount = 0;
-
-    function toggleSW() {
-        const btn = document.getElementById('sw-btn');
-        const lapBtn = document.getElementById('lap-btn');
-
-        if (btn.textContent === "Start") {
-            swStart = Date.now() - swElapsed;
-            swInterval = setInterval(() => {
-                swElapsed = Date.now() - swStart;
-                updateSWUI(swElapsed);
-            }, 10);
-            btn.textContent = "Stop";
-            btn.className = "btn btn-danger"; // Visual change to Stop
-            lapBtn.style.display = "block";   // Show Lap button when running
-        } else {
-            clearInterval(swInterval);
-            btn.textContent = "Start";
-            btn.className = "btn btn-main";
-            lapBtn.style.display = "none";    // Hide Lap button when paused
-        }
-    }
-
-    function updateSWUI(time) {
-        const ms = Math.floor((time % 1000) / 10);
-        const s = Math.floor((time / 1000) % 60);
-        const m = Math.floor(time / 60000);
-        document.getElementById('sw-display').textContent = 
-            `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
-    }
-
-    function recordLap() {
-        lapCount++;
-        const lapTime = document.getElementById('sw-display').textContent;
-        const lapContainer = document.getElementById('laps-list');
+    <!-- STOPWATCH TAB -->
+    <div id="stopwatch-tab" class="tab-content">
+        <div class="brand">STOPWATCH</div>
+        <div id="sw-display" class="big-time">00:00.00</div>
         
-        const lapEntry = document.createElement('div');
-        lapEntry.style.cssText = "display:flex; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;";
-        lapEntry.innerHTML = `<span style="color:var(--secondary)">Lap ${lapCount}</span> <span>${lapTime}</span>`;
-        
-        // Add new lap to the TOP of the list
-        lapContainer.prepend(lapEntry);
-    }
+        <div id="laps-list"></div>
 
-    function resetSW() {
-        clearInterval(swInterval);
-        swElapsed = 0;
-        lapCount = 0;
-        document.getElementById('sw-display').textContent = "00:00.00";
-        document.getElementById('sw-btn').textContent = "Start";
-        document.getElementById('sw-btn').className = "btn btn-main";
-        document.getElementById('lap-btn').style.display = "none";
-        document.getElementById('laps-list').innerHTML = ""; // Clear laps
-    }
-</script>
+        <div class="controls">
+            <button class="btn" onclick="resetSW()">Reset</button>
+            <button class="btn" id="lap-btn" onclick="recordLap()" style="display:none">Lap</button>
+            <button class="btn btn-main" id="sw-btn" onclick="toggleSW()">Start</button>
+        </div>
+    </div>
+
+    <script>
+        // GLOBAL VARIABLES
+        let swStart, swInterval, swElapsed = 0, lapCount = 0;
+        let timerInt, timeLeft = 0;
+        let alarms = JSON.parse(localStorage.getItem('alarms')) || [];
+        const beep = document.getElementById('beep');
+        const alarmSound = document.getElementById('alarm-sound');
+
         // 1. NAVIGATION
-        function showTab(t) {
+        function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-            document.getElementById(t + '-tab').classList.add('active-tab');
-            document.getElementById('n-' + t).classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active-tab');
+            document.getElementById('n-' + tabName).classList.add('active');
         }
 
         // 2. WORLD CLOCK
@@ -190,44 +183,73 @@
             const now = new Date();
             document.getElementById('main-clock').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
             document.getElementById('main-date').textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+            checkAlarms(now);
         }
         setInterval(updateClock, 1000);
+        updateClock();
 
-        // 3. STOPWATCH
-        let swStart, swInterval, swElapsed = 0;
-        function toggleSW() {
-            const btn = document.getElementById('sw-btn');
-            if (btn.textContent === "Start") {
-                swStart = Date.now() - swElapsed;
-                swInterval = setInterval(() => {
-                    swElapsed = Date.now() - swStart;
-                    const ms = Math.floor((swElapsed % 1000) / 10);
-                    const s = Math.floor((swElapsed / 1000) % 60);
-                    const m = Math.floor(swElapsed / 60000);
-                    document.getElementById('sw-display').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
-                }, 10);
-                btn.textContent = "Stop";
-            } else {
-                clearInterval(swInterval);
-                btn.textContent = "Start";
+        // 3. ALARM FUNCTIONS
+        function addAlarm() {
+            const timeInput = document.getElementById('new-alarm-time');
+            const timeStr = timeInput.value;
+            if (!timeStr) return;
+
+            const alarm = {
+                id: Date.now(),
+                time: timeStr,
+                active: true
+            };
+            alarms.unshift(alarm);
+            localStorage.setItem('alarms', JSON.stringify(alarms));
+            renderAlarms();
+            timeInput.value = '';
+        }
+
+        function renderAlarms() {
+            const container = document.getElementById('alarm-list');
+            container.innerHTML = '';
+            alarms.forEach(alarm => {
+                const alarmItem = document.createElement('div');
+                alarmItem.className = 'alarm-item';
+                alarmItem.innerHTML = `
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 800;">${alarm.time}</div>
+                        <div style="font-size: 0.8rem; color: var(--secondary);">Daily</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${alarm.active ? 'checked' : ''} onchange="toggleAlarm(${alarm.id}, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                `;
+                container.appendChild(alarmItem);
+            });
+        }
+
+        function toggleAlarm(id, active) {
+            const alarm = alarms.find(a => a.id === id);
+            if (alarm) {
+                alarm.active = active;
+                localStorage.setItem('alarms', JSON.stringify(alarms));
             }
         }
-        function resetSW() {
-            clearInterval(swInterval); swElapsed = 0;
-            document.getElementById('sw-display').textContent = "00:00.00";
-            document.getElementById('sw-btn').textContent = "Start";
+
+        function checkAlarms(now) {
+            const currentTime = now.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5);
+            alarms.forEach(alarm => {
+                if (alarm.active && alarm.time === currentTime) {
+                    alarmSound.play().catch(e => console.log('Alarm blocked'));
+                    document.getElementById('stop-sound').style.display = 'block';
+                }
+            });
         }
 
-        // 4. FUNCTIONAL TIMER
-        let timerInt, timeLeft = 0;
-        const beep = document.getElementById('beep');
-
+        // 4. TIMER FUNCTIONS
         function toggleTimer() {
             const btn = document.getElementById('timer-btn');
             if (btn.textContent === "Start") {
                 const m = parseInt(document.getElementById('t-min').value) || 0;
                 const s = parseInt(document.getElementById('t-sec').value) || 0;
-                if (m === 0 && s === 0) return;
+                if (m === 0 && s === 0) return alert('Please set a time!');
                 
                 timeLeft = (m * 60) + s;
                 document.getElementById('timer-inputs').style.display = 'none';
@@ -240,9 +262,10 @@
                     
                     if (timeLeft <= 0) {
                         clearInterval(timerInt);
-                        beep.play();
+                        beep.play().catch(e => console.log('Sound blocked'));
                         document.getElementById('stop-sound').style.display = 'block';
                         btn.textContent = "Start";
+                        document.getElementById('timer-inputs').style.display = 'flex';
                     }
                 }, 1000);
                 btn.textContent = "Pause";
@@ -255,16 +278,76 @@
         function stopBeep() {
             beep.pause();
             beep.currentTime = 0;
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
             document.getElementById('stop-sound').style.display = 'none';
         }
 
         function resetTimer() {
             clearInterval(timerInt);
+            timeLeft = 0;
             document.getElementById('timer-inputs').style.display = 'flex';
             document.getElementById('timer-display').textContent = "00:00";
             document.getElementById('timer-btn').textContent = "Start";
             stopBeep();
+            document.getElementById('t-min').value = '';
+            document.getElementById('t-sec').value = '';
         }
+
+        // 5. STOPWATCH FUNCTIONS
+        function toggleSW() {
+            const btn = document.getElementById('sw-btn');
+            const lapBtn = document.getElementById('lap-btn');
+
+            if (btn.textContent === "Start") {
+                swStart = Date.now() - swElapsed;
+                swInterval = setInterval(() => {
+                    swElapsed = Date.now() - swStart;
+                    updateSWUI(swElapsed);
+                }, 10);
+                btn.textContent = "Stop";
+                btn.className = "btn btn-danger";
+                lapBtn.style.display = "block";
+            } else {
+                clearInterval(swInterval);
+                btn.textContent = "Start";
+                btn.className = "btn btn-main";
+                lapBtn.style.display = "none";
+            }
+        }
+
+        function updateSWUI(time) {
+            const ms = Math.floor((time % 1000) / 10);
+            const s = Math.floor((time / 1000) % 60);
+            const m = Math.floor(time / 60000);
+            document.getElementById('sw-display').textContent = 
+                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+        }
+
+        function recordLap() {
+            lapCount++;
+            const lapTime = document.getElementById('sw-display').textContent;
+            const lapContainer = document.getElementById('laps-list');
+            
+            const lapEntry = document.createElement('div');
+            lapEntry.className = 'lap-entry';
+            lapEntry.innerHTML = `<span style="color:var(--secondary)">Lap ${lapCount}</span> <span>${lapTime}</span>`;
+            lapContainer.prepend(lapEntry);
+        }
+
+        function resetSW() {
+            clearInterval(swInterval);
+            swElapsed = 0;
+            lapCount = 0;
+            document.getElementById('sw-display').textContent = "00:00.00";
+            document.getElementById('sw-btn').textContent = "Start";
+            document.getElementById('sw-btn').className = "btn btn-main";
+            document.getElementById('lap-btn').style.display = "none";
+            document.getElementById('laps-list').innerHTML = "";
+        }
+
+        // INITIALIZE
+        renderAlarms();
     </script>
 </body>
 </html>
