@@ -105,40 +105,78 @@
         <button class="btn btn-main" onclick="alert('Alarm feature: Set a time to trigger audio!')">+ Add Alarm</button>
     </div>
 
-    <div id="stopwatch-tab" class="tab-content">
-        <div class="brand">STOPWATCH</div>
-        <div id="sw-display" class="big-time">00:00.00</div>
-        <div class="controls">
-            <button class="btn" onclick="resetSW()">Reset</button>
-            <button class="btn btn-main" id="sw-btn" onclick="toggleSW()">Start</button>
+   <div id="stopwatch-tab" class="tab-content">
+    <div class="brand">STOPWATCH</div>
+    <div id="sw-display" class="big-time">00:00.00</div>
+    
+    <div id="laps-list" style="width: 100%; max-width: 300px; margin-top: 20px; max-height: 150px; overflow-y: auto; border-top: 1px solid var(--border);">
         </div>
-    </div>
 
-    <div id="timer-tab" class="tab-content">
-        <div class="brand">TIMER</div>
-        <div id="timer-display" class="big-time">00:00</div>
+    <div class="controls">
+        <button class="btn" onclick="resetSW()">Reset</button>
+        <button class="btn" id="lap-btn" onclick="recordLap()" style="display:none">Lap</button>
+        <button class="btn btn-main" id="sw-btn" onclick="toggleSW()">Start</button>
+    </div>
+</div>
+
+<script>
+    // Existing variables
+    let swStart, swInterval, swElapsed = 0;
+    let lapCount = 0;
+
+    function toggleSW() {
+        const btn = document.getElementById('sw-btn');
+        const lapBtn = document.getElementById('lap-btn');
+
+        if (btn.textContent === "Start") {
+            swStart = Date.now() - swElapsed;
+            swInterval = setInterval(() => {
+                swElapsed = Date.now() - swStart;
+                updateSWUI(swElapsed);
+            }, 10);
+            btn.textContent = "Stop";
+            btn.className = "btn btn-danger"; // Visual change to Stop
+            lapBtn.style.display = "block";   // Show Lap button when running
+        } else {
+            clearInterval(swInterval);
+            btn.textContent = "Start";
+            btn.className = "btn btn-main";
+            lapBtn.style.display = "none";    // Hide Lap button when paused
+        }
+    }
+
+    function updateSWUI(time) {
+        const ms = Math.floor((time % 1000) / 10);
+        const s = Math.floor((time / 1000) % 60);
+        const m = Math.floor(time / 60000);
+        document.getElementById('sw-display').textContent = 
+            `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+    }
+
+    function recordLap() {
+        lapCount++;
+        const lapTime = document.getElementById('sw-display').textContent;
+        const lapContainer = document.getElementById('laps-list');
         
-        <div class="timer-input-group" id="timer-inputs">
-            <input type="number" id="t-min" placeholder="Min" min="0" max="99">
-            <span>:</span>
-            <input type="number" id="t-sec" placeholder="Sec" min="0" max="59">
-        </div>
+        const lapEntry = document.createElement('div');
+        lapEntry.style.cssText = "display:flex; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;";
+        lapEntry.innerHTML = `<span style="color:var(--secondary)">Lap ${lapCount}</span> <span>${lapTime}</span>`;
+        
+        // Add new lap to the TOP of the list
+        lapContainer.prepend(lapEntry);
+    }
 
-        <div class="controls">
-            <button class="btn btn-danger" id="stop-sound" style="display:none" onclick="stopBeep()">Silence</button>
-            <button class="btn" onclick="resetTimer()">Reset</button>
-            <button class="btn btn-main" id="timer-btn" onclick="toggleTimer()">Start</button>
-        </div>
-    </div>
-
-    <nav>
-        <button onclick="showTab('clock')" id="n-clock" class="active">Clock</button>
-        <button onclick="showTab('alarm')" id="n-alarm">Alarm</button>
-        <button onclick="showTab('stopwatch')" id="n-stopwatch">Lap</button>
-        <button onclick="showTab('timer')" id="n-timer">Timer</button>
-    </nav>
-
-    <script>
+    function resetSW() {
+        clearInterval(swInterval);
+        swElapsed = 0;
+        lapCount = 0;
+        document.getElementById('sw-display').textContent = "00:00.00";
+        document.getElementById('sw-btn').textContent = "Start";
+        document.getElementById('sw-btn').className = "btn btn-main";
+        document.getElementById('lap-btn').style.display = "none";
+        document.getElementById('laps-list').innerHTML = ""; // Clear laps
+    }
+</script>
         // 1. NAVIGATION
         function showTab(t) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
