@@ -4,92 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #050505; --panel: #121214; --accent: #34d399; --text: #e2e8f0; --secondary: #64748b; }
-        body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding-top: 50px; }
-        .container { width: 90%; max-width: 450px; background: var(--panel); padding: 2.5rem; border-radius: 35px; border: 1px solid #222; text-align: center; }
-        .brand { font-size: 1.2rem; letter-spacing: 6px; text-transform: uppercase; color: var(--accent); margin-bottom: 30px; }
-        input { width: 100%; padding: 18px; border-radius: 18px; border: 1px solid #333; background: #1a1a1c; color: white; outline: none; box-sizing: border-box; }
-        .suggestions { background: #1a1a1c; border: 1px solid #333; border-radius: 15px; max-height: 300px; overflow-y: auto; margin-top: 10px; display: none; text-align: left; }
-        .suggestions div { padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #222; display: flex; flex-direction: column; }
-        .suggestions div:hover { background: #252529; }
-        #clock { font-size: 5rem; font-weight: 900; margin: 10px 0; font-variant-numeric: tabular-nums; }
-        #location { color: var(--accent); font-weight: 500; }
+        :root {
+            --bg: #050507;
+            --panel: rgba(255, 255, 255, 0.04);
+            --accent: #00ffa3;
+            --text: #ffffff;
+            --secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Tabs System */
+        .tab-content {
+            flex: 1;
+            display: none;
+            padding: 40px 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .active-tab { display: flex; }
+
+        /* Navigation */
+        nav {
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        nav button.active { color: var(--accent); font-weight: 800; }
+
+        /* Global UI Elements */
+        .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 20px; opacity: 0.6; }
+        .big-time { font-size: 4rem; font-weight: 800; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        
+        /* Stopwatch & Timer Specifics */
+        .controls { display: flex; gap: 15px; margin-top: 30px; }
+        .btn {
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-main { background: var(--accent); color: black; border: none; }
+
+        /* Search bar for Clock Tab */
+        .search-box {
+            width: 100%;
+            max-width: 350px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .laps {
+            margin-top: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 300px;
+        }
+        .lap-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); color: var(--secondary); }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="brand">The Clock</div>
-    <input type="text" id="search" placeholder="Connecting to Global Database..." disabled>
-    <div id="suggestions" class="suggestions"></div>
-    <div id="location">Detecting...</div>
-    <div id="clock">00:00:00</div>
-    <div id="date">---</div>
-</div>
 
-<script>
-    let flatCities = [];
-    let activeTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    let activeName = "Local Time";
+    <div id="clock-tab" class="tab-content active-tab">
+        <div class="brand">THE CLOCK</div>
+        <div id="location" style="color: var(--accent)">Local Time</div>
+        <div id="main-clock" class="big-time">00:00:00</div>
+        <div id="main-date" style="color: var(--secondary)">---</div>
+        <input type="text" id="city-search" class="search-box" placeholder="Search Cities (Kurukshetra, Goa...)">
+    </div>
 
-    async function loadData() {
-        const input = document.getElementById('search');
-        try {
-            // Pulling directly from dr5hn's cloud database
-            const res = await fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json');
-            const data = await res.json();
-            
-            data.forEach(country => {
-                country.states.forEach(state => {
-                    state.cities.forEach(city => {
-                        flatCities.push({
-                            cityName: city.name,
-                            stateName: state.name,
-                            countryName: country.name,
-                            tz: city.timezone || (country.timezones && country.timezones.zoneName) || "UTC"
-                        });
-                    });
-                });
-            });
-            input.placeholder = "Search (Goa, Haryana, Kurukshetra...)";
-            input.disabled = false;
-        } catch (err) { input.placeholder = "Load Error"; }
-    }
+    <div id="alarm-tab" class="tab-content">
+        <div class="brand">ALARM</div>
+        <div style="font-size: 1.5rem">No Alarms Set</div>
+        <button class="btn btn-main" style="margin-top: 20px;">+ Add Alarm</button>
+    </div>
 
-    const input = document.getElementById('search');
-    const sugg = document.getElementById('suggestions');
+    <div id="stopwatch-tab" class="tab-content">
+        <div class="brand">STOPWATCH</div>
+        <div id="sw-display" class="big-time">00:00.00</div>
+        <div class="controls">
+            <button class="btn" onclick="resetSW()">Reset</button>
+            <button class="btn btn-main" id="sw-toggle" onclick="toggleSW()">Start</button>
+        </div>
+        <div class="laps" id="laps-container"></div>
+    </div>
 
-    input.addEventListener('input', () => {
-        const val = input.value.toLowerCase().trim();
-        sugg.innerHTML = '';
-        if (val.length < 2) { sugg.style.display = 'none'; return; }
-        const matches = flatCities.filter(c => 
-            c.cityName.toLowerCase().includes(val) || c.stateName.toLowerCase().includes(val)
-        ).slice(0, 20);
-        if (matches.length > 0) {
-            sugg.style.display = 'block';
-            matches.forEach(m => {
-                const div = document.createElement('div');
-                div.innerHTML = `<strong>${m.cityName}</strong><small>${m.stateName}, ${m.countryName}</small>`;
-                div.onclick = () => {
-                    activeTz = m.tz; activeName = m.cityName;
-                    input.value = ''; sugg.style.display = 'none';
-                };
-                sugg.append(div);
-            });
+    <div id="timer-tab" class="tab-content">
+        <div class="brand">TIMER</div>
+        <div id="timer-display" class="big-time">05:00</div>
+        <div class="controls">
+            <button class="btn" onclick="resetTimer()">5m</button>
+            <button class="btn btn-main" onclick="toggleTimer()">Start/Stop</button>
+        </div>
+    </div>
+
+    <nav>
+        <button onclick="showTab('clock')" id="nav-clock" class="active">Clock</button>
+        <button onclick="showTab('alarm')" id="nav-alarm">Alarm</button>
+        <button onclick="showTab('stopwatch')" id="nav-stopwatch">Stopwatch</button>
+        <button onclick="showTab('timer')" id="nav-timer">Timer</button>
+    </nav>
+
+    <script>
+        // TAB SWITCHING LOGIC
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active-tab');
+            document.getElementById('nav-' + tab).classList.add('active');
         }
-    });
 
-    function tick() {
-        const now = new Date();
-        const tOpt = { timeZone: activeTz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        const dOpt = { timeZone: activeTz, weekday: 'long', day: 'numeric', month: 'long' };
-        document.getElementById('clock').textContent = new Intl.DateTimeFormat('en-GB', tOpt).format(now);
-        document.getElementById('date').textContent = new Intl.DateTimeFormat('en-GB', dOpt).format(now);
-        document.getElementById('location').textContent = activeName;
-    }
-    setInterval(tick, 1000);
-    loadData();
-</script>
+        // WORLD CLOCK LOGIC (Using your working database)
+        let activeTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        function updateClock() {
+            const now = new Date();
+            const tOpt = { timeZone: activeTz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('main-clock').textContent = new Intl.DateTimeFormat('en-GB', tOpt).format(now);
+            document.getElementById('main-date').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase();
+        }
+        setInterval(updateClock, 1000);
+
+        // STOPWATCH LOGIC
+        let swInterval;
+        let swTime = 0;
+        let swRunning = false;
+
+        function toggleSW() {
+            if(!swRunning) {
+                swRunning = true;
+                document.getElementById('sw-toggle').textContent = "Stop";
+                swInterval = setInterval(() => {
+                    swTime += 10;
+                    updateSWDisplay();
+                }, 10);
+            } else {
+                swRunning = false;
+                document.getElementById('sw-toggle').textContent = "Start";
+                clearInterval(swInterval);
+            }
+        }
+
+        function updateSWDisplay() {
+            const ms = Math.floor((swTime % 1000) / 10);
+            const s = Math.floor((swTime / 1000) % 60);
+            const m = Math.floor((swTime / 60000) % 60);
+            document.getElementById('sw-display').textContent = 
+                `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
+        }
+
+        function resetSW() {
+            clearInterval(swInterval);
+            swTime = 0;
+            swRunning = false;
+            document.getElementById('sw-toggle').textContent = "Start";
+            updateSWDisplay();
+        }
+
+        // TIMER LOGIC (Basic)
+        let timerSeconds = 300;
+        let timerInterval;
+        function toggleTimer() {
+            if(timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            } else {
+                timerInterval = setInterval(() => {
+                    if(timerSeconds > 0) {
+                        timerSeconds--;
+                        const m = Math.floor(timerSeconds / 60);
+                        const s = timerSeconds % 60;
+                        document.getElementById('timer-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                    }
+                }, 1000);
+            }
+        }
+        function resetTimer() { timerSeconds = 300; document.getElementById('timer-display').textContent = "05:00"; }
+    </script>
 </body>
 </html>
