@@ -27,23 +27,32 @@
         .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; opacity: 0.7; }
         .big-time { font-size: 7.5rem; font-weight: 800; line-height: 1; margin: 10px 0; font-variant-numeric: tabular-nums; }
         
+        /* COLOR CODED SEARCH ENGINE */
         .search-wrapper { width: 100%; max-width: 400px; position: relative; margin-top: 20px; }
-        .search-box { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid var(--border); background: var(--panel); color: white; text-align: center; }
-        .suggestions { position: absolute; bottom: 75px; left: 0; right: 0; background: #111; border-radius: 15px; border: 1px solid var(--border); display: none; max-height: 200px; overflow-y: auto; z-index: 1100; }
-        .suggestions div { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border); text-align: left; }
+        .search-box { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid var(--border); background: var(--panel); color: var(--accent); text-align: center; font-weight: 500; font-size: 1rem; transition: 0.3s; }
+        .search-box::placeholder { color: var(--secondary); font-weight: 300; }
+        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 255, 163, 0.15); }
+        
+        .suggestions { position: absolute; bottom: 75px; left: 0; right: 0; background: #111; border-radius: 15px; border: 1px solid var(--border); display: none; max-height: 200px; overflow-y: auto; z-index: 1100; overflow-x: hidden; }
+        .suggestions div { padding: 12px 18px; cursor: pointer; border-bottom: 1px solid var(--border); text-align: left; transition: 0.2s; }
+        .suggestions div:hover { background: rgba(0, 255, 163, 0.1); color: var(--accent); padding-left: 25px; }
 
         .card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 25px; width: 100%; max-width: 450px; margin-bottom: 15px; }
-        input[type="number"], select { background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 10px; text-align: center; font-weight: 800; }
+        input[type="number"], select { background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 10px; text-align: center; font-weight: 800; transition: 0.3s; }
+        input[type="number"]:focus { border-color: var(--accent); }
 
-        .btn { padding: 16px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 700; }
+        .btn { padding: 16px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .btn-main { background: var(--accent); color: #000; border: none; }
         .btn-stop { background: var(--danger); border: none; }
-        .q-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; cursor: pointer; }
+        .q-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .q-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         /* DASHBOARDS */
         .pc-dashboard { display: flex; gap: 30px; width: 100%; max-width: 1000px; height: 450px; }
         .dash-side { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 30px; padding: 30px; display: flex; flex-direction: column; justify-content: center; }
-        .list-side { flex: 1.2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .list-side { flex: 1.2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 10px; }
+        .list-side::-webkit-scrollbar { width: 5px; }
+        .list-side::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
 
         #alarm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
     </style>
@@ -89,11 +98,11 @@
             <div id="std-ui" class="card" style="text-align: center;"><input type="number" id="std-m" value="10"> : <input type="number" id="std-s" value="00"></div>
             <div id="pomo-ui" style="display: none;">
                 <div class="card">
-                    <div style="display:flex; justify-content: space-between;"><span>Work (m)</span><input type="number" id="p-work" value="25"></div>
+                    <div style="display:flex; justify-content: space-between; align-items: center;"><span>Work (m)</span><input type="number" id="p-work" value="25"></div>
                     <div class="quick-row"><button class="q-btn" onclick="adj('p-work', 1)">+1</button><button class="q-btn" onclick="adj('p-work', 5)">+5</button><button class="q-btn" onclick="pAdj('p-work')">Custom</button></div>
                 </div>
                 <div class="card">
-                    <div style="display:flex; justify-content: space-between;"><span>Break (m)</span><input type="number" id="p-break" value="5"></div>
+                    <div style="display:flex; justify-content: space-between; align-items: center;"><span>Break (m)</span><input type="number" id="p-break" value="5"></div>
                     <div class="quick-row"><button class="q-btn" onclick="adj('p-break', 1)">+1</button><button class="q-btn" onclick="adj('p-break', 5)">+5</button><button class="q-btn" onclick="pAdj('p-break')">Custom</button></div>
                 </div>
             </div>
@@ -108,7 +117,7 @@
                 <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
                     <input type="number" id="a-hr" value="07" style="font-size:2rem; width:80px;">
                     <input type="number" id="a-min" value="00" style="font-size:2rem; width:80px;">
-                    <select id="a-ampm" style="padding:10px;"><option>AM</option><option>PM</option></select>
+                    <select id="a-ampm" style="padding:10px; font-size: 1.2rem;"><option>AM</option><option>PM</option></select>
                 </div>
                 <button class="btn btn-main" onclick="addAlarm()">Add Alarm</button>
             </div>
@@ -118,7 +127,7 @@
 
     <nav>
         <button id="n-clock" class="active" onclick="showTab('clock')">Clock</button>
-        <button id="n-stopwatch" onclick="showTab('stopwatch')">SW</button>
+        <button id="n-stopwatch" onclick="showTab('stopwatch')">Stopwatch</button>
         <button id="n-timer" onclick="showTab('timer')">Timer</button>
         <button id="n-alarm" onclick="showTab('alarm')">Alarm</button>
     </nav>
@@ -155,7 +164,7 @@
             if(matches.length > 0) {
                 sugg.style.display = 'block';
                 matches.forEach(m => {
-                    const d = document.createElement('div'); d.innerHTML = `${m.n}, <small>${m.s}</small>`;
+                    const d = document.createElement('div'); d.innerHTML = `<span style="color:var(--text);">${m.n}</span> <small style="color:var(--secondary); margin-left:5px;">${m.s}, ${m.c}</small>`;
                     d.onclick = () => { tz = m.z; locName = m.n; sugg.style.display = 'none'; e.target.value = ''; };
                     sugg.append(d);
                 });
@@ -184,11 +193,11 @@
         }
         function recordLap() {
             const time = document.getElementById('sw-display').textContent;
-            const div = document.createElement('div'); div.className = 'card'; div.style.padding = '10px';
-            div.innerHTML = `Lap ${laps.length + 1}: ${time}`;
+            const div = document.createElement('div'); div.className = 'card'; div.style.padding = '15px'; div.style.display = 'flex'; div.style.justifyContent = 'space-between';
+            div.innerHTML = `<span style="color:var(--secondary);">Lap ${laps.length + 1}</span><span style="font-variant-numeric: tabular-nums; font-weight:800;">${time}</span>`;
             document.getElementById('lap-list').prepend(div); laps.push(time);
         }
-        function resetSW() { clearInterval(swInt); swElapsed = 0; laps = []; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('lap-list').innerHTML = ''; }
+        function resetSW() { clearInterval(swInt); swElapsed = 0; laps = []; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('lap-list').innerHTML = ''; document.getElementById('sw-btn').textContent = "Start"; }
 
         // TIMER & POMO
         function setTMode(m) {
@@ -213,6 +222,7 @@
         function startT() {
             clearInterval(tInt);
             document.getElementById('timer-label').textContent = (tMode === 'pomo') ? (isWork ? "WORKING" : "BREAK") : "Standard Timer";
+            document.getElementById('timer-label').style.color = (tMode === 'pomo' && !isWork) ? "var(--break)" : "var(--accent)";
             tInt = setInterval(() => {
                 tLeft--;
                 const m = Math.floor(tLeft/60), s = tLeft%60;
@@ -220,14 +230,15 @@
                 if(tLeft <= 0) { clearInterval(tInt); triggerAlarm(); }
             }, 1000);
         }
-        function resetT() { clearInterval(tInt); document.getElementById('t-settings').style.visibility = 'visible'; document.getElementById('timer-display').textContent = "00:00"; document.getElementById('timer-btn').textContent = "Start"; isWork = true; }
+        function resetT() { clearInterval(tInt); document.getElementById('t-settings').style.visibility = 'visible'; document.getElementById('timer-display').textContent = "00:00"; document.getElementById('timer-btn').textContent = "Start"; document.getElementById('timer-label').textContent = "Timer"; document.getElementById('timer-label').style.color = "var(--accent)"; isWork = true; }
 
         // ALARM
         function addAlarm() {
             const hr = document.getElementById('a-hr').value, min = document.getElementById('a-min').value, am = document.getElementById('a-ampm').value;
             const timeStr = `${hr}:${min.padStart(2,'0')} ${am}`;
             const id = Date.now(); alarms.push({id, time: timeStr, active: true});
-            const div = document.createElement('div'); div.className = 'card'; div.innerHTML = `<span>${timeStr}</span><button onclick="removeA(${id}, this)" style="background:none; border:none; color:var(--danger); cursor:pointer;">Remove</button>`;
+            const div = document.createElement('div'); div.className = 'card'; div.style.display = 'flex'; div.style.justifyContent = 'space-between'; div.style.alignItems = 'center';
+            div.innerHTML = `<span style="font-size:1.5rem; font-weight:800;">${timeStr}</span><button onclick="removeA(${id}, this)" style="background:rgba(255,71,87,0.1); border:1px solid var(--danger); border-radius:10px; padding:8px 15px; color:var(--danger); cursor:pointer; font-weight:700; transition:0.2s;">Remove</button>`;
             document.getElementById('alarm-list').prepend(div);
         }
         function removeA(id, el) { alarms = alarms.filter(a => a.id !== id); el.parentElement.remove(); }
