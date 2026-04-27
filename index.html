@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Clock | Final Pro Edition</title>
+    <title>The Clock | PC Pro Suite</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,55 +15,56 @@
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
         /* TABS */
-        .tab-content { flex: 1; display: none; padding: 40px; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; }
+        .tab-content { flex: 1; display: none; padding: 20px 40px 140px; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; }
         .active-tab { display: flex !important; }
 
         /* NAVIGATION DOCK */
-        nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(20px); border: 1px solid var(--border); display: flex; gap: 8px; padding: 10px; border-radius: 30px; z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(25px); border: 1px solid var(--border); display: flex; gap: 8px; padding: 10px; border-radius: 30px; z-index: 1000; }
         nav button { background: none; border: none; color: var(--secondary); font-size: 0.75rem; text-transform: uppercase; cursor: pointer; padding: 12px 24px; border-radius: 20px; font-weight: 700; transition: 0.3s; }
         nav button.active { background: var(--accent); color: #000; }
 
-        /* TYPOGRAPHY & CLOCK */
-        .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; opacity: 0.7; }
-        .big-time { font-size: 8rem; font-weight: 800; line-height: 1; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        /* UI ELEMENTS */
+        .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; opacity: 0.7; }
+        .big-time { font-size: 7.5rem; font-weight: 800; line-height: 1; margin: 10px 0; font-variant-numeric: tabular-nums; }
         
-        /* SEARCH ENGINE */
-        .search-box { width: 100%; max-width: 400px; padding: 18px; border-radius: 15px; border: 1px solid var(--border); background: var(--panel); color: white; text-align: center; font-size: 1rem; }
-        
-        /* CARDS & INPUTS */
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 25px; width: 100%; max-width: 450px; margin-bottom: 15px; }
-        .input-group { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        input[type="number"] { background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 10px; width: 70px; text-align: center; font-size: 1.2rem; font-weight: 800; }
+        .search-wrapper { width: 100%; max-width: 400px; position: relative; margin-top: 20px; }
+        .search-box { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid var(--border); background: var(--panel); color: white; text-align: center; }
+        .suggestions { position: absolute; bottom: 75px; left: 0; right: 0; background: #111; border-radius: 15px; border: 1px solid var(--border); display: none; max-height: 200px; overflow-y: auto; z-index: 1100; }
+        .suggestions div { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border); text-align: left; }
 
-        /* BUTTONS */
-        .btn { padding: 16px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 25px; width: 100%; max-width: 450px; margin-bottom: 15px; }
+        input[type="number"], select { background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 10px; text-align: center; font-weight: 800; }
+
+        .btn { padding: 16px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 700; }
         .btn-main { background: var(--accent); color: #000; border: none; }
         .btn-stop { background: var(--danger); border: none; }
-        .q-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 8px 14px; border-radius: 10px; font-size: 0.75rem; cursor: pointer; }
-        .q-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .q-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; cursor: pointer; }
 
-        /* STOPWATCH LAPS */
-        .lap-list { width: 100%; max-width: 400px; height: 180px; overflow-y: auto; margin-top: 20px; padding: 10px; border-radius: 15px; background: rgba(255,255,255,0.02); }
-        .lap-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border); color: var(--secondary); font-variant-numeric: tabular-nums; }
+        /* DASHBOARDS */
+        .pc-dashboard { display: flex; gap: 30px; width: 100%; max-width: 1000px; height: 450px; }
+        .dash-side { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 30px; padding: 30px; display: flex; flex-direction: column; justify-content: center; }
+        .list-side { flex: 1.2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
 
-        /* OVERLAY */
         #alarm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
     </style>
 </head>
 <body>
 
-    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock_beep.ogg" loop></audio>
+    <audio id="alarm-sound" src="alarm.mp3" loop></audio>
 
     <div id="alarm-overlay">
-        <h1 id="overlay-msg" style="font-size: 4rem; color: var(--accent); margin-bottom: 10px;">TIME EXPIRED</h1>
-        <button class="btn btn-main" onclick="stopAlarm()">Dismiss & Continue</button>
+        <h1 id="overlay-msg" style="font-size: 4rem; color: var(--accent); margin-bottom: 20px;">ALERT</h1>
+        <button class="btn btn-main" onclick="stopAlarm()">Dismiss</button>
     </div>
 
     <div id="clock-tab" class="tab-content active-tab">
         <div class="brand">World Clock</div>
-        <div id="location" style="color: var(--accent); font-weight: 500;">Local Time</div>
+        <div id="location" style="color: var(--accent)">Local Time</div>
         <div id="main-clock" class="big-time">00:00:00</div>
-        <input type="text" id="city-search" class="search-box" placeholder="Enter City Name..." onkeypress="if(event.key === 'Enter') updateCity(this.value)">
+        <div class="search-wrapper">
+            <div id="suggestions" class="suggestions"></div>
+            <input type="text" id="city-search" class="search-box" placeholder="Loading Cities..." disabled autocomplete="off">
+        </div>
     </div>
 
     <div id="stopwatch-tab" class="tab-content">
@@ -75,79 +75,99 @@
             <button class="btn" onclick="recordLap()">Lap</button>
             <button class="btn btn-main" id="sw-btn" onclick="toggleSW()">Start</button>
         </div>
-        <div id="lap-list" class="lap-list"></div>
+        <div id="lap-list" class="list-side" style="margin-top:20px; max-width:400px; height:150px;"></div>
     </div>
 
     <div id="timer-tab" class="tab-content">
-        <div id="timer-label" class="brand">Standard Timer</div>
+        <div id="timer-label" class="brand">Timer</div>
         <div id="timer-display" class="big-time">00:00</div>
-
-        <div id="t-settings" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <div style="display: flex; gap: 10px; margin-bottom: 25px; background: var(--panel); padding: 5px; border-radius: 50px; border: 1px solid var(--border);">
-                <button id="mode-std" class="btn" style="padding: 10px 25px; background: var(--accent); color: #000;" onclick="setMode('std')">Standard</button>
-                <button id="mode-pomo" class="btn" style="padding: 10px 25px;" onclick="setMode('pomo')">Pomodoro Loop</button>
+        <div id="t-settings" style="width: 100%; max-width: 450px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
+                <button id="m-std" class="btn btn-main" style="padding:10px 20px;" onclick="setTMode('std')">Standard</button>
+                <button id="m-pomo" class="btn" style="padding:10px 20px;" onclick="setTMode('pomo')">Pomodoro</button>
             </div>
-
-            <div id="std-ui" class="card" style="text-align: center; border: none; background: none;">
-                <input type="number" id="std-m" value="10"> <span style="font-size: 2rem;">:</span> <input type="number" id="std-s" value="00">
-            </div>
-
-            <div id="pomo-ui" style="display: none; width: 100%; max-width: 450px;">
+            <div id="std-ui" class="card" style="text-align: center;"><input type="number" id="std-m" value="10"> : <input type="number" id="std-s" value="00"></div>
+            <div id="pomo-ui" style="display: none;">
                 <div class="card">
-                    <div class="input-group"><span>Focus Time (m)</span><input type="number" id="p-work" value="25"></div>
-                    <div class="quick-row">
-                        <button class="q-btn" onclick="adj('p-work', 1)">+1</button>
-                        <button class="q-btn" onclick="adj('p-work', 5)">+5</button>
-                        <button class="q-btn" onclick="promptAdj('p-work')">Custom</button>
-                    </div>
+                    <div style="display:flex; justify-content: space-between;"><span>Work (m)</span><input type="number" id="p-work" value="25"></div>
+                    <div class="quick-row"><button class="q-btn" onclick="adj('p-work', 1)">+1</button><button class="q-btn" onclick="adj('p-work', 5)">+5</button><button class="q-btn" onclick="pAdj('p-work')">Custom</button></div>
                 </div>
                 <div class="card">
-                    <div class="input-group"><span>Break Time (m)</span><input type="number" id="p-break" value="5"></div>
-                    <div class="quick-row">
-                        <button class="q-btn" onclick="adj('p-break', 1)">+1</button>
-                        <button class="q-btn" onclick="adj('p-break', 5)">+5</button>
-                        <button class="q-btn" onclick="promptAdj('p-break')">Custom</button>
-                    </div>
+                    <div style="display:flex; justify-content: space-between;"><span>Break (m)</span><input type="number" id="p-break" value="5"></div>
+                    <div class="quick-row"><button class="q-btn" onclick="adj('p-break', 1)">+1</button><button class="q-btn" onclick="adj('p-break', 5)">+5</button><button class="q-btn" onclick="pAdj('p-break')">Custom</button></div>
                 </div>
             </div>
         </div>
+        <button class="btn btn-main" id="timer-btn" onclick="handleTimer()" style="margin-top:20px; width:200px;">Start</button>
+    </div>
 
-        <div style="display: flex; gap: 15px; margin-top: 30px;">
-            <button class="btn btn-main" id="timer-btn" onclick="handleTimer()" style="width: 200px;">Start</button>
-            <button class="btn btn-stop" id="end-session" onclick="endSession()" style="display: none;">End Session</button>
+    <div id="alarm-tab" class="tab-content">
+        <div class="brand">Alarms</div>
+        <div class="pc-dashboard">
+            <div class="dash-side">
+                <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
+                    <input type="number" id="a-hr" value="07" style="font-size:2rem; width:80px;">
+                    <input type="number" id="a-min" value="00" style="font-size:2rem; width:80px;">
+                    <select id="a-ampm" style="padding:10px;"><option>AM</option><option>PM</option></select>
+                </div>
+                <button class="btn btn-main" onclick="addAlarm()">Add Alarm</button>
+            </div>
+            <div id="alarm-list" class="list-side"></div>
         </div>
     </div>
 
     <nav>
         <button id="n-clock" class="active" onclick="showTab('clock')">Clock</button>
-        <button id="n-stopwatch" onclick="showTab('stopwatch')">Stopwatch</button>
+        <button id="n-stopwatch" onclick="showTab('stopwatch')">SW</button>
         <button id="n-timer" onclick="showTab('timer')">Timer</button>
+        <button id="n-alarm" onclick="showTab('alarm')">Alarm</button>
     </nav>
 
     <script>
-        // GLOBALS
-        let timerMode = 'std', swStart, swInt, swElapsed = 0, laps = [];
-        let tInt, tLeft = 0, isPomoWork = true, workTotal = 0, breakTotal = 0;
-        const alarm = document.getElementById('alarm-sound');
+        let flatCities = [], tz = Intl.DateTimeFormat().resolvedOptions().timeZone, locName = "Local Time";
+        let swStart, swInt, swElapsed = 0, laps = [];
+        let tInt, tLeft = 0, tMode = 'std', isWork = true, alarms = [];
+        const audio = document.getElementById('alarm-sound');
 
         function showTab(t) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
             document.getElementById(t + '-tab').classList.add('active-tab');
             document.getElementById('n-' + t).classList.add('active');
-            alarm.play().then(() => { alarm.pause(); alarm.currentTime = 0; }).catch(() => {});
+            audio.play().then(()=> {audio.pause(); audio.currentTime=0;}).catch(()=>{});
         }
 
-        // WORLD CLOCK
+        // CLOCK DATA & SEARCH
+        async function init() {
+            try {
+                const res = await fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json');
+                const data = await res.json();
+                data.forEach(country => country.states.forEach(state => state.cities.forEach(city => {
+                    flatCities.push({n: city.name, s: state.name, c: country.name, z: city.timezone || country.timezones.zoneName});
+                })));
+                const inp = document.getElementById('city-search'); inp.placeholder = "Search Cities..."; inp.disabled = false;
+            } catch(e) {}
+        }
+        document.getElementById('city-search').addEventListener('input', e => {
+            const val = e.target.value.toLowerCase(), sugg = document.getElementById('suggestions');
+            sugg.innerHTML = ''; if(val.length < 2) { sugg.style.display = 'none'; return; }
+            const matches = flatCities.filter(c => c.n.toLowerCase().includes(val)).slice(0, 8);
+            if(matches.length > 0) {
+                sugg.style.display = 'block';
+                matches.forEach(m => {
+                    const d = document.createElement('div'); d.innerHTML = `${m.n}, <small>${m.s}</small>`;
+                    d.onclick = () => { tz = m.z; locName = m.n; sugg.style.display = 'none'; e.target.value = ''; };
+                    sugg.append(d);
+                });
+            }
+        });
         setInterval(() => {
             const now = new Date();
-            document.getElementById('main-clock').textContent = now.toLocaleTimeString("en-GB", {hour12:false});
+            document.getElementById('main-clock').textContent = now.toLocaleTimeString("en-GB", {timeZone: tz, hour12: false});
+            document.getElementById('location').textContent = locName;
+            const cur = now.toLocaleTimeString('en-US', {hour12:true, hour:'2-digit', minute:'2-digit'}).replace(/^0/, '');
+            alarms.forEach(a => { if(a.time === cur && a.active) triggerAlarm("ALARM!"); });
         }, 1000);
-
-        function updateCity(val) {
-            document.getElementById('location').textContent = val.toUpperCase();
-            document.getElementById('city-search').value = '';
-        }
 
         // STOPWATCH
         function toggleSW() {
@@ -156,7 +176,7 @@
                 swStart = Date.now() - swElapsed;
                 swInt = setInterval(() => {
                     swElapsed = Date.now() - swStart;
-                    const ms = Math.floor((swElapsed % 1000)/10), s = Math.floor((swElapsed/1000)%60), m = Math.floor(swElapsed/60000);
+                    const ms = Math.floor((swElapsed%1000)/10), s = Math.floor((swElapsed/1000)%60), m = Math.floor(swElapsed/60000);
                     document.getElementById('sw-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
                 }, 10);
                 btn.textContent = "Stop";
@@ -164,88 +184,65 @@
         }
         function recordLap() {
             const time = document.getElementById('sw-display').textContent;
-            const item = document.createElement('div'); item.className = 'lap-item';
-            item.innerHTML = `<span>Lap ${laps.length+1}</span><span>${time}</span>`;
-            document.getElementById('lap-list').prepend(item);
-            laps.push(time);
+            const div = document.createElement('div'); div.className = 'card'; div.style.padding = '10px';
+            div.innerHTML = `Lap ${laps.length + 1}: ${time}`;
+            document.getElementById('lap-list').prepend(div); laps.push(time);
         }
-        function resetSW() { clearInterval(swInt); swElapsed = 0; laps = []; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('lap-list').innerHTML = ''; document.getElementById('sw-btn').textContent = "Start"; }
+        function resetSW() { clearInterval(swInt); swElapsed = 0; laps = []; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('lap-list').innerHTML = ''; }
 
-        // TIMER / POMO
-        function setMode(m) {
-            timerMode = m;
+        // TIMER & POMO
+        function setTMode(m) {
+            tMode = m;
             document.getElementById('std-ui').style.display = m === 'std' ? 'block' : 'none';
             document.getElementById('pomo-ui').style.display = m === 'pomo' ? 'block' : 'none';
-            document.getElementById('timer-label').textContent = m === 'std' ? 'Standard Timer' : 'Focus Session';
-            document.getElementById('mode-std').style.background = m === 'std' ? 'var(--accent)' : 'var(--panel)';
-            document.getElementById('mode-std').style.color = m === 'std' ? '#000' : '#fff';
-            document.getElementById('mode-pomo').style.background = m === 'pomo' ? 'var(--accent)' : 'var(--panel)';
-            document.getElementById('mode-pomo').style.color = m === 'pomo' ? '#000' : '#fff';
+            document.getElementById('m-std').className = m === 'std' ? 'btn btn-main' : 'btn';
+            document.getElementById('m-pomo').className = m === 'pomo' ? 'btn btn-main' : 'btn';
         }
         function adj(id, v) { const el = document.getElementById(id); el.value = Math.max(1, parseInt(el.value) + v); }
-        function promptAdj(id) { const v = prompt("Enter minutes to add:"); if(v) adj(id, parseInt(v)); }
+        function pAdj(id) { const v = prompt("Minutes:"); if(v) adj(id, parseInt(v)); }
 
         function handleTimer() {
             const btn = document.getElementById('timer-btn');
-            if(btn.textContent === "Start" || btn.textContent === "Start Focus Loop") {
-                if(timerMode === 'std') {
-                    tLeft = (parseInt(document.getElementById('std-m').value)*60) + parseInt(document.getElementById('std-s').value);
-                } else {
-                    isPomoWork = true;
-                    tLeft = parseInt(document.getElementById('p-work').value)*60;
-                    document.getElementById('end-session').style.display = 'block';
-                }
+            if(btn.textContent === "Start") {
+                tLeft = (tMode === 'std') ? (parseInt(document.getElementById('std-m').value)*60 + parseInt(document.getElementById('std-s').value)) : (parseInt(document.getElementById('p-work').value)*60);
                 if(tLeft <= 0) return;
                 document.getElementById('t-settings').style.visibility = 'hidden';
-                btn.textContent = "Cancel";
-                startCountdown();
-            } else { resetTimerUI(); }
+                btn.textContent = "Cancel"; startT();
+            } else { resetT(); }
         }
-
-        function startCountdown() {
+        function startT() {
             clearInterval(tInt);
-            document.getElementById('timer-label').textContent = timerMode === 'std' ? "Standard Timer" : (isPomoWork ? "FOCUSING" : "RESTING");
-            document.getElementById('timer-label').style.color = isPomoWork ? "var(--accent)" : "var(--break)";
-            
+            document.getElementById('timer-label').textContent = (tMode === 'pomo') ? (isWork ? "WORKING" : "BREAK") : "Standard Timer";
             tInt = setInterval(() => {
                 tLeft--;
-                if(timerMode === 'pomo') { if(isPomoWork) workTotal++; else breakTotal++; }
                 const m = Math.floor(tLeft/60), s = tLeft%60;
                 document.getElementById('timer-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                 if(tLeft <= 0) { clearInterval(tInt); triggerAlarm(); }
             }, 1000);
         }
+        function resetT() { clearInterval(tInt); document.getElementById('t-settings').style.visibility = 'visible'; document.getElementById('timer-display').textContent = "00:00"; document.getElementById('timer-btn').textContent = "Start"; isWork = true; }
 
-        function triggerAlarm() {
-            alarm.play();
-            document.getElementById('overlay-msg').textContent = timerMode === 'std' ? "TIME EXPIRED" : (isPomoWork ? "WORK DONE" : "BREAK DONE");
+        // ALARM
+        function addAlarm() {
+            const hr = document.getElementById('a-hr').value, min = document.getElementById('a-min').value, am = document.getElementById('a-ampm').value;
+            const timeStr = `${hr}:${min.padStart(2,'0')} ${am}`;
+            const id = Date.now(); alarms.push({id, time: timeStr, active: true});
+            const div = document.createElement('div'); div.className = 'card'; div.innerHTML = `<span>${timeStr}</span><button onclick="removeA(${id}, this)" style="background:none; border:none; color:var(--danger); cursor:pointer;">Remove</button>`;
+            document.getElementById('alarm-list').prepend(div);
+        }
+        function removeA(id, el) { alarms = alarms.filter(a => a.id !== id); el.parentElement.remove(); }
+
+        function triggerAlarm(msg) {
+            audio.play(); document.getElementById('overlay-msg').textContent = msg || "TIME UP";
             document.getElementById('alarm-overlay').style.display = 'flex';
         }
-
         function stopAlarm() {
-            alarm.pause(); alarm.currentTime = 0;
-            document.getElementById('alarm-overlay').style.display = 'none';
-            if(timerMode === 'pomo') {
-                isPomoWork = !isPomoWork;
-                tLeft = (isPomoWork ? document.getElementById('p-work').value : document.getElementById('break-m' || 'p-break').value) * 60;
-                startCountdown();
-            } else { resetTimerUI(); }
+            audio.pause(); audio.currentTime = 0; document.getElementById('alarm-overlay').style.display = 'none';
+            if(tMode === 'pomo') { isWork = !isWork; tLeft = (isWork ? document.getElementById('p-work').value : document.getElementById('p-break').value) * 60; startT(); }
+            else resetT();
         }
 
-        function endSession() {
-            alert(`Summary:\nTotal Focus: ${Math.floor(workTotal/60)}m\nTotal Rest: ${Math.floor(breakTotal/60)}m`);
-            resetTimerUI();
-        }
-
-        function resetTimerUI() {
-            clearInterval(tInt);
-            document.getElementById('t-settings').style.visibility = 'visible';
-            document.getElementById('timer-display').textContent = "00:00";
-            document.getElementById('timer-btn').textContent = "Start";
-            document.getElementById('end-session').style.display = 'none';
-            document.getElementById('timer-label').style.color = "var(--accent)";
-            workTotal = 0; breakTotal = 0;
-        }
+        init();
     </script>
 </body>
 </html>
