@@ -27,179 +27,196 @@
             overflow: hidden;
         }
 
-        /* TABS */
+        /* TABS - Fixed Visibility */
         .tab-content {
             flex: 1;
-            display: none;
+            display: none; /* Hidden by default */
             padding: 40px 20px 120px;
             text-align: center;
             overflow-y: auto;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .active-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* This rule ensures that when a tab is active, it actually shows up */
+        .active-tab { 
+            display: flex !important; 
+        }
 
-        .brand { letter-spacing: 5px; color: var(--accent); margin-bottom: 20px; opacity: 0.6; font-size: 0.8rem; }
-        .big-time { font-size: 4.5rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: 10px 0; }
+        .brand { letter-spacing: 5px; color: var(--accent); margin-bottom: 20px; opacity: 0.6; font-size: 0.8rem; text-transform: uppercase; }
+        .big-time { font-size: 4.5rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: 10px 0; line-height: 1; }
 
-        /* ADVANCED SEARCH UI */
-        .search-wrapper { width: 100%; max-width: 350px; position: relative; margin-top: 20px; }
+        /* SEARCH UI */
+        .search-wrapper { width: 100%; max-width: 320px; position: relative; margin-top: 20px; }
         .search-box {
-            width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border);
-            background: var(--panel); color: white; outline: none; font-size: 0.9rem; transition: 0.3s;
+            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--panel); color: white; outline: none; font-size: 0.9rem;
         }
-        .search-box:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
 
         .suggestions {
             position: absolute; bottom: 65px; left: 0; right: 0; 
-            background: #121214; border-radius: 15px; max-height: 250px; 
+            background: #121214; border-radius: 12px; max-height: 200px; 
             overflow-y: auto; border: 1px solid var(--border);
-            display: none; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 100;
         }
-        .suggestions div { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
-        .suggestions div:hover { background: var(--panel); }
-        .suggestions strong { display: block; color: var(--accent); font-size: 0.9rem; }
-        .suggestions small { color: var(--secondary); font-size: 0.75rem; }
+        .suggestions div { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); cursor: pointer; }
 
-        /* NAV */
+        /* NAV DOCK */
         nav {
             position: fixed; bottom: 0; width: 100%;
             background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px);
             border-top: 1px solid var(--border); display: flex;
             justify-content: space-around; padding: 15px 0 30px;
         }
-        nav button { background: none; border: none; color: var(--secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        nav button { background: none; border: none; color: var(--secondary); font-size: 0.7rem; cursor: pointer; text-transform: uppercase; }
         nav button.active { color: var(--accent); font-weight: 800; }
 
+        /* INPUTS & ALARMS */
+        input[type="number"], input[type="time"] {
+            background: var(--panel); border: 1px solid var(--border);
+            color: white; padding: 10px; border-radius: 8px; margin: 5px; text-align: center;
+        }
+        .alarm-item {
+            width: 100%; max-width: 300px; background: var(--panel);
+            padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
         /* BUTTONS */
-        .btn { padding: 15px 30px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 600; margin: 5px; }
+        .btn { padding: 12px 25px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 600; margin: 5px; }
         .btn-main { background: var(--accent) !important; color: black !important; border: none; }
     </style>
 </head>
 <body>
 
 <div id="clock-tab" class="tab-content active-tab">
-    <div class="brand">WORLD CLOCK</div>
+    <div class="brand">World Clock</div>
     <div id="location" style="color: var(--accent)">Local Time</div>
     <div id="clock" class="big-time">00:00:00</div>
-    <div id="date" style="color: var(--secondary)">---</div>
-
     <div class="search-wrapper">
         <div id="suggestions" class="suggestions"></div>
-        <input id="city-search" class="search-box" placeholder="Connecting to Global Data..." disabled autocomplete="off">
+        <input id="city-search" class="search-box" placeholder="Search City..." autocomplete="off">
     </div>
 </div>
 
 <div id="stopwatch-tab" class="tab-content">
-    <div class="brand">STOPWATCH</div>
+    <div class="brand">Stopwatch</div>
     <div id="sw" class="big-time">00:00.00</div>
-    <button class="btn btn-main" onclick="toggleSW()" id="swBtn">Start</button>
-    <button class="btn" onclick="resetSW()">Reset</button>
+    <div>
+        <button class="btn btn-main" onclick="toggleSW()" id="swBtn">Start</button>
+        <button class="btn" onclick="resetSW()">Reset</button>
+    </div>
+</div>
+
+<div id="timer-tab" class="tab-content">
+    <div class="brand">Timer</div>
+    <div id="timer-display" class="big-time">00:00</div>
+    <div id="t-inputs">
+        <input type="number" id="t-min" placeholder="Min" style="width: 60px;">
+        <input type="number" id="t-sec" placeholder="Sec" style="width: 60px;">
+    </div>
+    <button class="btn btn-main" onclick="toggleTimer()" id="tBtn" style="margin-top: 15px;">Start</button>
+</div>
+
+<div id="alarm-tab" class="tab-content">
+    <div class="brand">Alarm</div>
+    <div id="alarm-list" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+    <div style="margin-top: 20px;">
+        <input type="time" id="alarmTime">
+        <button class="btn btn-main" onclick="addAlarm()">Add</button>
+    </div>
 </div>
 
 <nav>
-    <button onclick="showTab('clock')" id="n-clock" class="active">Clock</button>
-    <button onclick="showTab('stopwatch')" id="n-stopwatch">SW</button>
-    <button onclick="showTab('timer')" id="n-timer">Timer</button>
-    <button onclick="showTab('alarm')" id="n-alarm">Alarm</button>
+    <button onclick="showTab('clock')" id="btn-clock" class="active">Clock</button>
+    <button onclick="showTab('stopwatch')" id="btn-stopwatch">SW</button>
+    <button onclick="showTab('timer')" id="btn-timer">Timer</button>
+    <button onclick="showTab('alarm')" id="btn-alarm">Alarm</button>
 </nav>
 
 <script>
-// TABS
-function showTab(tab){
-    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active-tab'));
-    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-    document.getElementById(tab+'-tab').classList.add('active-tab');
-    document.getElementById('n-'+tab).classList.add('active');
+// TAB LOGIC
+function showTab(tabName) {
+    // Hide all
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active-tab'));
+    document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+    
+    // Show selected
+    document.getElementById(tabName + '-tab').classList.add('active-tab');
+    document.getElementById('btn-' + tabName).classList.add('active');
 }
 
-// PRO SEARCH ENGINE
-let flatCities = [];
+// CLOCK LOGIC
 let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-let locName = "Local Time";
-
-async function initSearch() {
-    const input = document.getElementById("city-search");
-    try {
-        // Using the comprehensive dr5hn database
-        const res = await fetch("https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json");
-        const data = await res.json();
-        
-        // Flatten data for instant searching
-        data.forEach(country => {
-            country.states.forEach(state => {
-                state.cities.forEach(city => {
-                    flatCities.push({
-                        n: city.name,
-                        s: state.name,
-                        c: country.name,
-                        z: city.timezone || country.timezones.zoneName
-                    });
-                });
-            });
-        });
-        input.placeholder = "Search (Goa, Haryana, London...)";
-        input.disabled = false;
-    } catch (e) {
-        input.placeholder = "Search offline mode";
-    }
-}
-initSearch();
-
-const cityInput = document.getElementById("city-search");
-const suggBox = document.getElementById("suggestions");
-
-cityInput.addEventListener("input", e => {
-    const val = e.target.value.toLowerCase().trim();
-    suggBox.innerHTML = "";
-    if (val.length < 2) { suggBox.style.display = "none"; return; }
-
-    const matches = flatCities.filter(c => 
-        c.n.toLowerCase().includes(val) || 
-        c.s.toLowerCase().includes(val)
-    ).slice(0, 8);
-
-    if (matches.length > 0) {
-        suggBox.style.display = "block";
-        matches.forEach(m => {
-            const d = document.createElement("div");
-            d.innerHTML = `<strong>${m.n}</strong><small>${m.s}, ${m.c}</small>`;
-            d.onclick = () => {
-                tz = m.z;
-                locName = m.n;
-                cityInput.value = "";
-                suggBox.style.display = "none";
-            };
-            suggBox.appendChild(d);
-        });
-    }
-});
-
-// CLOCK TICK
 function tick() {
     const now = new Date();
-    const options = { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    document.getElementById("clock").textContent = new Intl.DateTimeFormat('en-GB', options).format(now);
-    document.getElementById("date").textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
-    document.getElementById("location").textContent = locName;
+    document.getElementById("clock").textContent = now.toLocaleTimeString("en-GB", { timeZone: tz, hour12: false });
 }
 setInterval(tick, 1000);
 
-// STOPWATCH (Same logic as yours)
-let swInt, swTime=0;
-function toggleSW(){
-    let btn=document.getElementById("swBtn");
-    if(btn.textContent==="Start"){
-        swInt=setInterval(()=>{
-            swTime+=10;
-            let ms=Math.floor((swTime%1000)/10);
-            let s=Math.floor(swTime/1000)%60;
-            let m=Math.floor(swTime/60000);
-            document.getElementById("sw").textContent= `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
-        },10);
-        btn.textContent="Stop";
-    }else{ clearInterval(swInt); btn.textContent="Start"; }
+// STOPWATCH LOGIC
+let swInt, swTime = 0;
+function toggleSW() {
+    const btn = document.getElementById("swBtn");
+    if (btn.textContent === "Start") {
+        swInt = setInterval(() => {
+            swTime += 10;
+            let ms = Math.floor((swTime % 1000) / 10);
+            let s = Math.floor(swTime / 1000) % 60;
+            let m = Math.floor(swTime / 60000);
+            document.getElementById("sw").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
+        }, 10);
+        btn.textContent = "Stop";
+    } else {
+        clearInterval(swInt);
+        btn.textContent = "Start";
+    }
 }
-function resetSW(){ swTime=0; document.getElementById("sw").textContent="00:00.00"; }
+function resetSW() {
+    clearInterval(swInt);
+    swTime = 0;
+    document.getElementById("sw").textContent = "00:00.00";
+    document.getElementById("swBtn").textContent = "Start";
+}
+
+// TIMER LOGIC
+let tInt, timeLeft = 0;
+function toggleTimer() {
+    const btn = document.getElementById("tBtn");
+    if (btn.textContent === "Start") {
+        let m = parseInt(document.getElementById("t-min").value) || 0;
+        let s = parseInt(document.getElementById("t-sec").value) || 0;
+        timeLeft = (m * 60) + s;
+        if (timeLeft <= 0) return;
+        
+        tInt = setInterval(() => {
+            timeLeft--;
+            let min = Math.floor(timeLeft / 60);
+            let sec = timeLeft % 60;
+            document.getElementById("timer-display").textContent = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+            if (timeLeft <= 0) { clearInterval(tInt); alert("Timer Finished!"); btn.textContent = "Start"; }
+        }, 1000);
+        btn.textContent = "Pause";
+    } else {
+        clearInterval(tInt);
+        btn.textContent = "Start";
+    }
+}
+
+// ALARM LOGIC
+let alarms = [];
+function addAlarm() {
+    let t = document.getElementById("alarmTime").value;
+    if (!t) return;
+    alarms.push(t);
+    const list = document.getElementById("alarm-list");
+    const item = document.createElement('div');
+    item.className = 'alarm-item';
+    item.innerHTML = `<span>${t}</span><button class="btn" style="padding:5px 10px;" onclick="this.parentElement.remove()">X</button>`;
+    list.appendChild(item);
+}
 </script>
+
 </body>
 </html>
-
