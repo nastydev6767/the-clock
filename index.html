@@ -1,341 +1,251 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Clock | PC Pro Suite</title>
+    <title>The Clock | Final Pro Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050507;
-            --panel: rgba(255, 255, 255, 0.04);
-            --accent: #00ffa3;
-            --text: #ffffff;
-            --secondary: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
-            --danger: #ff4757;
-            --break: #ffbd2e;
+            --bg: #050507; --panel: rgba(255, 255, 255, 0.04); --accent: #00ffa3;
+            --text: #ffffff; --secondary: #94a3b8; --border: rgba(255, 255, 255, 0.1);
+            --danger: #ff4757; --break: #ffbd2e;
         }
+        * { box-sizing: border-box; outline: none; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        * { box-sizing: border-box; outline: none; transition: all 0.2s ease-out; }
-
-        body {
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* TABS & NAVIGATION */
-        .tab-content {
-            flex: 1;
-            display: none;
-            padding: 20px 40px 140px;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow-y: auto;
-        }
-
+        /* TABS */
+        .tab-content { flex: 1; display: none; padding: 40px; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; }
         .active-tab { display: flex !important; }
 
-        nav {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15, 15, 20, 0.8);
-            backdrop-filter: blur(25px);
-            border: 1px solid var(--border);
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-            border-radius: 28px;
-            z-index: 1000;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-        }
-
-        nav button {
-            background: none; border: none; color: var(--secondary);
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; padding: 12px 28px; border-radius: 20px; font-weight: 700;
-        }
-
-        nav button:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        /* NAVIGATION DOCK */
+        nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(20px); border: 1px solid var(--border); display: flex; gap: 8px; padding: 10px; border-radius: 30px; z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        nav button { background: none; border: none; color: var(--secondary); font-size: 0.75rem; text-transform: uppercase; cursor: pointer; padding: 12px 24px; border-radius: 20px; font-weight: 700; transition: 0.3s; }
         nav button.active { background: var(--accent); color: #000; }
 
-        /* UI COMPONENTS */
-        .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 10px; opacity: 0.6; text-transform: uppercase; }
-        .big-time { font-size: 7.5rem; font-weight: 800; margin: 10px 0; font-variant-numeric: tabular-nums; line-height: 1; }
+        /* TYPOGRAPHY & CLOCK */
+        .brand { font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; opacity: 0.7; }
+        .big-time { font-size: 8rem; font-weight: 800; line-height: 1; margin: 10px 0; font-variant-numeric: tabular-nums; }
         
-        .card { 
-            background: var(--panel); border: 1px solid var(--border); 
-            border-radius: 24px; padding: 25px; width: 100%; max-width: 450px;
-            margin-bottom: 15px; display: flex; flex-direction: column; gap: 15px;
-        }
+        /* SEARCH ENGINE */
+        .search-box { width: 100%; max-width: 400px; padding: 18px; border-radius: 15px; border: 1px solid var(--border); background: var(--panel); color: white; text-align: center; font-size: 1rem; }
+        
+        /* CARDS & INPUTS */
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 25px; width: 100%; max-width: 450px; margin-bottom: 15px; }
+        .input-group { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        input[type="number"] { background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 10px; width: 70px; text-align: center; font-size: 1.2rem; font-weight: 800; }
 
         /* BUTTONS */
-        .btn { padding: 16px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 700; font-size: 0.9rem; }
+        .btn { padding: 16px 35px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .btn-main { background: var(--accent); color: #000; border: none; }
-        .btn-stop { background: var(--danger); border: none; color: white; }
-        .btn-small { padding: 8px 15px; font-size: 0.7rem; border-radius: 10px; }
-
-        .quick-row { display: flex; gap: 8px; flex-wrap: wrap; }
-        .q-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; cursor: pointer; }
+        .btn-stop { background: var(--danger); border: none; }
+        .q-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 8px 14px; border-radius: 10px; font-size: 0.75rem; cursor: pointer; }
         .q-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-        input[type="number"] {
-            background: #000; border: 1px solid var(--border); color: white;
-            padding: 8px; border-radius: 10px; width: 65px; text-align: center; font-weight: 800;
-        }
+        /* STOPWATCH LAPS */
+        .lap-list { width: 100%; max-width: 400px; height: 180px; overflow-y: auto; margin-top: 20px; padding: 10px; border-radius: 15px; background: rgba(255,255,255,0.02); }
+        .lap-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border); color: var(--secondary); font-variant-numeric: tabular-nums; }
 
-        /* ALARM DASHBOARD */
-        .pc-dashboard { display: flex; gap: 30px; width: 100%; max-width: 1000px; height: 450px; }
-        .dashboard-side { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 30px; padding: 35px; display: flex; flex-direction: column; justify-content: center; }
-        .list-side { flex: 1.2; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 10px; }
-
-        /* ALARM OVERLAY */
-        #alarm-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
-            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
-        }
+        /* OVERLAY */
+        #alarm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
     </style>
 </head>
 <body>
 
-    <audio id="alarm-sound" src="alarm.mp3" loop></audio>
+    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock_beep.ogg" loop></audio>
 
     <div id="alarm-overlay">
         <h1 id="overlay-msg" style="font-size: 4rem; color: var(--accent); margin-bottom: 10px;">TIME EXPIRED</h1>
-        <p id="overlay-sub" style="color: var(--secondary); margin-bottom: 40px; letter-spacing: 2px;">CONTINUE FOCUS CYCLE?</p>
         <button class="btn btn-main" onclick="stopAlarm()">Dismiss & Continue</button>
     </div>
 
     <div id="clock-tab" class="tab-content active-tab">
-        <div class="brand">System Clock</div>
+        <div class="brand">World Clock</div>
+        <div id="location" style="color: var(--accent); font-weight: 500;">Local Time</div>
         <div id="main-clock" class="big-time">00:00:00</div>
-        <div id="main-date" style="color: var(--secondary); letter-spacing: 4px; font-weight: 500;">MONDAY, 27 APRIL</div>
+        <input type="text" id="city-search" class="search-box" placeholder="Enter City Name..." onkeypress="if(event.key === 'Enter') updateCity(this.value)">
     </div>
 
     <div id="stopwatch-tab" class="tab-content">
-        <div class="brand">Precision Timer</div>
+        <div class="brand">Stopwatch</div>
         <div id="sw-display" class="big-time">00:00.00</div>
-        <div style="display: flex; gap: 15px; margin-top: 30px;">
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
             <button class="btn" onclick="resetSW()">Reset</button>
+            <button class="btn" onclick="recordLap()">Lap</button>
             <button class="btn btn-main" id="sw-btn" onclick="toggleSW()">Start</button>
-            <button class="btn" id="sw-loop-btn" onclick="toggleSWLoop()" style="border-color: var(--secondary);">Loop: OFF</button>
         </div>
+        <div id="lap-list" class="lap-list"></div>
     </div>
 
     <div id="timer-tab" class="tab-content">
-        <div class="brand" id="timer-label">Focus Session</div>
-        <div id="session-stats" style="font-size: 0.9rem; color: var(--accent); margin-bottom: 10px; display:none;">Cycle #<span id="cycle-num">1</span></div>
+        <div id="timer-label" class="brand">Standard Timer</div>
         <div id="timer-display" class="big-time">00:00</div>
 
         <div id="t-settings" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <div class="card">
-                <div style="display:flex; justify-content: space-between; width: 100%; align-items: center;">
-                    <span style="font-weight: 800;">Focus Work (m)</span>
-                    <input type="number" id="work-min" value="25">
-                </div>
-                <div class="quick-row">
-                    <button class="q-btn" onclick="adj('work-min', 1)">+1</button>
-                    <button class="q-btn" onclick="adj('work-min', 5)">+5</button>
-                    <button class="q-btn" onclick="customAdj('work-min')">Custom</button>
-                </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 25px; background: var(--panel); padding: 5px; border-radius: 50px; border: 1px solid var(--border);">
+                <button id="mode-std" class="btn" style="padding: 10px 25px; background: var(--accent); color: #000;" onclick="setMode('std')">Standard</button>
+                <button id="mode-pomo" class="btn" style="padding: 10px 25px;" onclick="setMode('pomo')">Pomodoro Loop</button>
             </div>
 
-            <div class="card">
-                <div style="display:flex; justify-content: space-between; width: 100%; align-items: center;">
-                    <span style="font-weight: 800;">Break Rest (m)</span>
-                    <input type="number" id="break-min" value="5">
+            <div id="std-ui" class="card" style="text-align: center; border: none; background: none;">
+                <input type="number" id="std-m" value="10"> <span style="font-size: 2rem;">:</span> <input type="number" id="std-s" value="00">
+            </div>
+
+            <div id="pomo-ui" style="display: none; width: 100%; max-width: 450px;">
+                <div class="card">
+                    <div class="input-group"><span>Focus Time (m)</span><input type="number" id="p-work" value="25"></div>
+                    <div class="quick-row">
+                        <button class="q-btn" onclick="adj('p-work', 1)">+1</button>
+                        <button class="q-btn" onclick="adj('p-work', 5)">+5</button>
+                        <button class="q-btn" onclick="promptAdj('p-work')">Custom</button>
+                    </div>
                 </div>
-                <div class="quick-row">
-                    <button class="q-btn" onclick="adj('break-min', 1)">+1</button>
-                    <button class="q-btn" onclick="adj('break-min', 5)">+5</button>
-                    <button class="q-btn" onclick="customAdj('break-min')">Custom</button>
+                <div class="card">
+                    <div class="input-group"><span>Break Time (m)</span><input type="number" id="p-break" value="5"></div>
+                    <div class="quick-row">
+                        <button class="q-btn" onclick="adj('p-break', 1)">+1</button>
+                        <button class="q-btn" onclick="adj('p-break', 5)">+5</button>
+                        <button class="q-btn" onclick="promptAdj('p-break')">Custom</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div style="display: flex; gap: 15px; margin-top: 30px;">
-            <button class="btn btn-main" id="timer-btn" onclick="handleTimerMain()">Start Focus Loop</button>
-            <button class="btn btn-stop" id="end-session-btn" onclick="endFullSession()" style="display: none;">End Session</button>
-        </div>
-    </div>
-
-    <div id="alarm-tab" class="tab-content">
-        <div class="brand">Alarms</div>
-        <div class="pc-dashboard">
-            <div class="dashboard-side">
-                <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
-                    <input type="number" id="a-hr" value="07" max="12" style="font-size: 2rem; width: 80px; height: 60px;">
-                    <span style="font-size: 2rem; align-self: center;">:</span>
-                    <input type="number" id="a-min" value="00" max="59" style="font-size: 2rem; width: 80px; height: 60px;">
-                    <select id="a-ampm" style="background: #000; color: white; border: 1px solid var(--border); border-radius: 12px; font-weight: 800; padding: 10px;">
-                        <option>AM</option><option>PM</option>
-                    </select>
-                </div>
-                <button class="btn btn-main" onclick="addAlarm()">Save New Alarm</button>
-            </div>
-            <div id="alarm-list-pc" class="list-side"></div>
+            <button class="btn btn-main" id="timer-btn" onclick="handleTimer()" style="width: 200px;">Start</button>
+            <button class="btn btn-stop" id="end-session" onclick="endSession()" style="display: none;">End Session</button>
         </div>
     </div>
 
     <nav>
         <button id="n-clock" class="active" onclick="showTab('clock')">Clock</button>
         <button id="n-stopwatch" onclick="showTab('stopwatch')">Stopwatch</button>
-        <button id="n-timer" onclick="showTab('timer')">Focus</button>
-        <button id="n-alarm" onclick="showTab('alarm')">Alarms</button>
+        <button id="n-timer" onclick="showTab('timer')">Timer</button>
     </nav>
 
     <script>
-        let swStart, swInterval, swElapsed = 0, swIsLoop = false;
-        let timerInt, timeLeft = 0, isWorkPhase = true, totalWorkSec = 0, totalBreakSec = 0, cycleCount = 1;
-        let alarms = [];
-        const alarmSound = document.getElementById('alarm-sound');
+        // GLOBALS
+        let timerMode = 'std', swStart, swInt, swElapsed = 0, laps = [];
+        let tInt, tLeft = 0, isPomoWork = true, workTotal = 0, breakTotal = 0;
+        const alarm = document.getElementById('alarm-sound');
 
         function showTab(t) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
             document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
             document.getElementById(t + '-tab').classList.add('active-tab');
             document.getElementById('n-' + t).classList.add('active');
-            // Audio unlock
-            alarmSound.play().then(() => { alarmSound.pause(); alarmSound.currentTime = 0; }).catch(()=>{});
+            alarm.play().then(() => { alarm.pause(); alarm.currentTime = 0; }).catch(() => {});
         }
 
-        // CLOCK
+        // WORLD CLOCK
         setInterval(() => {
             const now = new Date();
             document.getElementById('main-clock').textContent = now.toLocaleTimeString("en-GB", {hour12:false});
-            document.getElementById('main-date').textContent = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'}).toUpperCase();
-            
-            const curTime = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }).replace(/^0/, '');
-            alarms.forEach(a => { if(a.time === curTime && a.active) triggerAlarmOverlay("ALARM!"); });
         }, 1000);
+
+        function updateCity(val) {
+            document.getElementById('location').textContent = val.toUpperCase();
+            document.getElementById('city-search').value = '';
+        }
 
         // STOPWATCH
         function toggleSW() {
             const btn = document.getElementById('sw-btn');
-            if (btn.textContent === "Start") {
+            if(btn.textContent === "Start") {
                 swStart = Date.now() - swElapsed;
-                swInterval = setInterval(() => {
+                swInt = setInterval(() => {
                     swElapsed = Date.now() - swStart;
-                    updateSWDisplay();
+                    const ms = Math.floor((swElapsed % 1000)/10), s = Math.floor((swElapsed/1000)%60), m = Math.floor(swElapsed/60000);
+                    document.getElementById('sw-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
                 }, 10);
                 btn.textContent = "Stop";
-            } else { clearInterval(swInterval); btn.textContent = "Start"; }
+            } else { clearInterval(swInt); btn.textContent = "Start"; }
         }
-        function updateSWDisplay() {
-            const ms = Math.floor((swElapsed % 1000) / 10), s = Math.floor((swElapsed / 1000) % 60), m = Math.floor(swElapsed / 60000);
-            document.getElementById('sw-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
+        function recordLap() {
+            const time = document.getElementById('sw-display').textContent;
+            const item = document.createElement('div'); item.className = 'lap-item';
+            item.innerHTML = `<span>Lap ${laps.length+1}</span><span>${time}</span>`;
+            document.getElementById('lap-list').prepend(item);
+            laps.push(time);
         }
-        function resetSW() {
-            clearInterval(swInterval); swElapsed = 0; updateSWDisplay();
-            document.getElementById('sw-btn').textContent = "Start";
-        }
-        function toggleSWLoop() {
-            swIsLoop = !swIsLoop;
-            document.getElementById('sw-loop-btn').textContent = `Loop: ${swIsLoop ? 'ON' : 'OFF'}`;
-            document.getElementById('sw-loop-btn').style.borderColor = swIsLoop ? 'var(--accent)' : 'var(--secondary)';
-        }
+        function resetSW() { clearInterval(swInt); swElapsed = 0; laps = []; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('lap-list').innerHTML = ''; document.getElementById('sw-btn').textContent = "Start"; }
 
-        // FOCUS TIMER LOGIC
-        function adj(id, val) { const el = document.getElementById(id); el.value = Math.max(1, parseInt(el.value) + val); }
-        function customAdj(id) { const val = prompt("Enter minutes to add:"); if(val) adj(id, parseInt(val)); }
+        // TIMER / POMO
+        function setMode(m) {
+            timerMode = m;
+            document.getElementById('std-ui').style.display = m === 'std' ? 'block' : 'none';
+            document.getElementById('pomo-ui').style.display = m === 'pomo' ? 'block' : 'none';
+            document.getElementById('timer-label').textContent = m === 'std' ? 'Standard Timer' : 'Focus Session';
+            document.getElementById('mode-std').style.background = m === 'std' ? 'var(--accent)' : 'var(--panel)';
+            document.getElementById('mode-std').style.color = m === 'std' ? '#000' : '#fff';
+            document.getElementById('mode-pomo').style.background = m === 'pomo' ? 'var(--accent)' : 'var(--panel)';
+            document.getElementById('mode-pomo').style.color = m === 'pomo' ? '#000' : '#fff';
+        }
+        function adj(id, v) { const el = document.getElementById(id); el.value = Math.max(1, parseInt(el.value) + v); }
+        function promptAdj(id) { const v = prompt("Enter minutes to add:"); if(v) adj(id, parseInt(v)); }
 
-        function handleTimerMain() {
+        function handleTimer() {
             const btn = document.getElementById('timer-btn');
-            if (btn.textContent.includes("Start")) {
-                isWorkPhase = true;
-                const m = parseInt(document.getElementById('work-min').value) || 1;
-                timeLeft = m * 60;
-                document.getElementById('t-settings').style.display = 'none';
-                document.getElementById('session-stats').style.display = 'block';
-                document.getElementById('end-session-btn').style.display = 'block';
-                document.getElementById('timer-btn').textContent = "Cancel Cycle";
-                runCountdown();
+            if(btn.textContent === "Start" || btn.textContent === "Start Focus Loop") {
+                if(timerMode === 'std') {
+                    tLeft = (parseInt(document.getElementById('std-m').value)*60) + parseInt(document.getElementById('std-s').value);
+                } else {
+                    isPomoWork = true;
+                    tLeft = parseInt(document.getElementById('p-work').value)*60;
+                    document.getElementById('end-session').style.display = 'block';
+                }
+                if(tLeft <= 0) return;
+                document.getElementById('t-settings').style.visibility = 'hidden';
+                btn.textContent = "Cancel";
+                startCountdown();
             } else { resetTimerUI(); }
         }
 
-        function runCountdown() {
-            clearInterval(timerInt);
-            document.getElementById('timer-label').textContent = isWorkPhase ? "FOCUSING" : "RESTING";
-            document.getElementById('timer-label').style.color = isWorkPhase ? "var(--accent)" : "var(--break)";
+        function startCountdown() {
+            clearInterval(tInt);
+            document.getElementById('timer-label').textContent = timerMode === 'std' ? "Standard Timer" : (isPomoWork ? "FOCUSING" : "RESTING");
+            document.getElementById('timer-label').style.color = isPomoWork ? "var(--accent)" : "var(--break)";
             
-            timerInt = setInterval(() => {
-                timeLeft--;
-                if (isWorkPhase) totalWorkSec++; else totalBreakSec++;
-                const min = Math.floor(timeLeft / 60), sec = timeLeft % 60;
-                document.getElementById('timer-display').textContent = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-
-                if (timeLeft <= 0) {
-                    clearInterval(timerInt);
-                    triggerAlarmOverlay(isWorkPhase ? "WORK DONE" : "REST DONE");
-                }
+            tInt = setInterval(() => {
+                tLeft--;
+                if(timerMode === 'pomo') { if(isPomoWork) workTotal++; else breakTotal++; }
+                const m = Math.floor(tLeft/60), s = tLeft%60;
+                document.getElementById('timer-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if(tLeft <= 0) { clearInterval(tInt); triggerAlarm(); }
             }, 1000);
         }
 
-        function triggerAlarmOverlay(msg) {
-            alarmSound.play();
-            document.getElementById('overlay-msg').textContent = msg;
+        function triggerAlarm() {
+            alarm.play();
+            document.getElementById('overlay-msg').textContent = timerMode === 'std' ? "TIME EXPIRED" : (isPomoWork ? "WORK DONE" : "BREAK DONE");
             document.getElementById('alarm-overlay').style.display = 'flex';
         }
 
         function stopAlarm() {
-            alarmSound.pause(); alarmSound.currentTime = 0;
+            alarm.pause(); alarm.currentTime = 0;
             document.getElementById('alarm-overlay').style.display = 'none';
-            if (document.getElementById('timer-tab').classList.contains('active-tab')) {
-                if (isWorkPhase) {
-                    isWorkPhase = false;
-                    timeLeft = (parseInt(document.getElementById('break-min').value) || 1) * 60;
-                } else {
-                    isWorkPhase = true; cycleCount++;
-                    document.getElementById('cycle-num').textContent = cycleCount;
-                    timeLeft = (parseInt(document.getElementById('work-min').value) || 1) * 60;
-                }
-                runCountdown();
-            }
+            if(timerMode === 'pomo') {
+                isPomoWork = !isPomoWork;
+                tLeft = (isPomoWork ? document.getElementById('p-work').value : document.getElementById('break-m' || 'p-break').value) * 60;
+                startCountdown();
+            } else { resetTimerUI(); }
         }
 
-        function endFullSession() {
-            const wM = Math.floor(totalWorkSec / 60), bM = Math.floor(totalBreakSec / 60);
-            alert(`SESSIONS SUMMARY:\nTotal Focus: ${wM}m\nTotal Rest: ${bM}m\nCycles: ${cycleCount-1}`);
+        function endSession() {
+            alert(`Summary:\nTotal Focus: ${Math.floor(workTotal/60)}m\nTotal Rest: ${Math.floor(breakTotal/60)}m`);
             resetTimerUI();
         }
 
         function resetTimerUI() {
-            clearInterval(timerInt); totalWorkSec = 0; totalBreakSec = 0; cycleCount = 1;
-            document.getElementById('t-settings').style.display = 'flex';
-            document.getElementById('session-stats').style.display = 'none';
-            document.getElementById('end-session-btn').style.display = 'none';
+            clearInterval(tInt);
+            document.getElementById('t-settings').style.visibility = 'visible';
             document.getElementById('timer-display').textContent = "00:00";
-            document.getElementById('timer-btn').textContent = "Start Focus Loop";
-            document.getElementById('timer-label').textContent = "Focus Session";
+            document.getElementById('timer-btn').textContent = "Start";
+            document.getElementById('end-session').style.display = 'none';
             document.getElementById('timer-label').style.color = "var(--accent)";
+            workTotal = 0; breakTotal = 0;
         }
-
-        // ALARMS
-        function addAlarm() {
-            const hr = document.getElementById('a-hr').value, min = document.getElementById('a-min').value, ampm = document.getElementById('a-ampm').value;
-            alarms.push({ id: Date.now(), time: `${hr}:${min.padStart(2,'0')} ${ampm}`, active: true });
-            renderAlarms();
-        }
-        function renderAlarms() {
-            const list = document.getElementById('alarm-list-pc'); list.innerHTML = '';
-            alarms.forEach(a => {
-                const card = document.createElement('div'); card.className = 'card'; card.style.maxWidth = "100%";
-                card.innerHTML = `<div><div style="font-size:1.5rem; font-weight:800;">${a.time}</div></div><button class="btn btn-small btn-stop" onclick="removeAlarm(${a.id})">Remove</button>`;
-                list.prepend(card);
-            });
-        }
-        function removeAlarm(id) { alarms = alarms.filter(a => a.id !== id); renderAlarms(); }
-
     </script>
 </body>
 </html>
