@@ -1,123 +1,93 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Clock</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050507;
+            --panel: rgba(255, 255, 255, 0.04);
+            --accent: #00ffa3;
+            --text: #ffffff;
+            --secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --danger: #ff4757;
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-<style>
-:root {
-    --bg:#050507;
-    --panel:rgba(255,255,255,0.04);
-    --accent:#00ffa3;
-    --text:#fff;
-    --secondary:#94a3b8;
-    --border:rgba(255,255,255,0.1);
-    --danger:#ff4757;
-}
+        /* TABS */
+        .tab-content {
+            flex: 1;
+            display: none;
+            padding: 40px 20px 120px;
+            text-align: center;
+            overflow-y: auto;
+        }
+        .active-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-body{
-    margin:0;
-    font-family:'Plus Jakarta Sans',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    display:flex;
-    flex-direction:column;
-    height:100vh;
-}
+        .brand { letter-spacing: 5px; color: var(--accent); margin-bottom: 20px; opacity: 0.6; font-size: 0.8rem; }
+        .big-time { font-size: 4.5rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: 10px 0; }
 
-/* TABS */
-.tab-content{
-    flex:1;
-    display:none;
-    padding:40px 20px 120px;
-    text-align:center;
-}
-.active-tab{display:block;}
+        /* ADVANCED SEARCH UI */
+        .search-wrapper { width: 100%; max-width: 350px; position: relative; margin-top: 20px; }
+        .search-box {
+            width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border);
+            background: var(--panel); color: white; outline: none; font-size: 0.9rem; transition: 0.3s;
+        }
+        .search-box:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
 
-.brand{
-    letter-spacing:5px;
-    color:var(--accent);
-    margin-bottom:20px;
-}
+        .suggestions {
+            position: absolute; bottom: 65px; left: 0; right: 0; 
+            background: #121214; border-radius: 15px; max-height: 250px; 
+            overflow-y: auto; border: 1px solid var(--border);
+            display: none; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .suggestions div { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .suggestions div:hover { background: var(--panel); }
+        .suggestions strong { display: block; color: var(--accent); font-size: 0.9rem; }
+        .suggestions small { color: var(--secondary); font-size: 0.75rem; }
 
-.big-time{
-    font-size:4rem;
-    font-weight:800;
-}
+        /* NAV */
+        nav {
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border); display: flex;
+            justify-content: space-around; padding: 15px 0 30px;
+        }
+        nav button { background: none; border: none; color: var(--secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        nav button.active { color: var(--accent); font-weight: 800; }
 
-/* NAV */
-nav{
-    position:fixed;
-    bottom:0;
-    width:100%;
-    background:#0b0b0f;
-    border-top:1px solid var(--border);
-    display:flex;
-    justify-content:space-around;
-    padding:15px 0;
-}
-nav button{
-    background:none;
-    border:none;
-    color:var(--secondary);
-}
-nav button.active{
-    color:var(--accent);
-}
-
-/* SEARCH */
-.search-box{
-    padding:12px;
-    width:260px;
-    margin-top:20px;
-    border-radius:10px;
-    border:1px solid var(--border);
-    background:var(--panel);
-    color:white;
-}
-
-.suggestions{
-    max-width:260px;
-    margin:auto;
-    display:none;
-    background:#111;
-}
-.suggestions div{
-    padding:10px;
-    cursor:pointer;
-}
-.suggestions div:hover{background:#222;}
-
-/* BUTTONS */
-.btn{
-    padding:12px 25px;
-    border-radius:30px;
-    border:none;
-    margin:5px;
-    cursor:pointer;
-}
-.btn-main{background:var(--accent);color:black;}
-.btn-danger{background:var(--danger);color:black;}
-</style>
+        /* BUTTONS */
+        .btn { padding: 15px 30px; border-radius: 50px; border: 1px solid var(--border); background: var(--panel); color: white; cursor: pointer; font-weight: 600; margin: 5px; }
+        .btn-main { background: var(--accent) !important; color: black !important; border: none; }
+    </style>
 </head>
-
 <body>
 
-<!-- CLOCK -->
 <div id="clock-tab" class="tab-content active-tab">
-    <div class="brand">CLOCK</div>
-    <div id="location">Local Time</div>
+    <div class="brand">WORLD CLOCK</div>
+    <div id="location" style="color: var(--accent)">Local Time</div>
     <div id="clock" class="big-time">00:00:00</div>
+    <div id="date" style="color: var(--secondary)">---</div>
 
-    <input id="city-search" class="search-box" placeholder="Loading..." disabled>
-    <div id="suggestions" class="suggestions"></div>
+    <div class="search-wrapper">
+        <div id="suggestions" class="suggestions"></div>
+        <input id="city-search" class="search-box" placeholder="Connecting to Global Data..." disabled autocomplete="off">
+    </div>
 </div>
 
-<!-- STOPWATCH -->
 <div id="stopwatch-tab" class="tab-content">
     <div class="brand">STOPWATCH</div>
     <div id="sw" class="big-time">00:00.00</div>
@@ -125,174 +95,111 @@ nav button.active{
     <button class="btn" onclick="resetSW()">Reset</button>
 </div>
 
-<!-- TIMER -->
-<div id="timer-tab" class="tab-content">
-    <div class="brand">TIMER</div>
-    <div id="timer" class="big-time">00:00</div>
-    <input id="min" type="number" placeholder="Min">
-    <input id="sec" type="number" placeholder="Sec">
-    <br>
-    <button class="btn btn-main" onclick="startTimer()" id="tBtn">Start</button>
-    <button class="btn" onclick="resetTimer()">Reset</button>
-</div>
-
-<!-- ALARM -->
-<div id="alarm-tab" class="tab-content">
-    <div class="brand">ALARM</div>
-    <input type="time" id="alarmTime">
-    <button class="btn btn-main" onclick="addAlarm()">Add</button>
-    <div id="alarmList"></div>
-</div>
-
-<!-- NAV -->
 <nav>
-<button onclick="showTab('clock')" class="active">Clock</button>
-<button onclick="showTab('stopwatch')">SW</button>
-<button onclick="showTab('timer')">Timer</button>
-<button onclick="showTab('alarm')">Alarm</button>
+    <button onclick="showTab('clock')" id="n-clock" class="active">Clock</button>
+    <button onclick="showTab('stopwatch')" id="n-stopwatch">SW</button>
+    <button onclick="showTab('timer')" id="n-timer">Timer</button>
+    <button onclick="showTab('alarm')" id="n-alarm">Alarm</button>
 </nav>
 
 <script>
-// NAV
+// TABS
 function showTab(tab){
     document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active-tab'));
     document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
     document.getElementById(tab+'-tab').classList.add('active-tab');
-    event.target.classList.add('active');
+    document.getElementById('n-'+tab).classList.add('active');
 }
 
-// CLOCK
+// PRO SEARCH ENGINE
+let flatCities = [];
 let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-let loc = "Local Time";
+let locName = "Local Time";
 
-function tick(){
-    let now=new Date();
-    document.getElementById("clock").textContent =
-        now.toLocaleTimeString("en-GB",{timeZone:tz});
-    document.getElementById("location").textContent = loc;
-}
-setInterval(tick,1000);
-
-// SEARCH
-let cities=[];
-async function init(){
-    let input=document.getElementById("city-search");
-    try{
-        let res=await fetch("https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json");
-        let data=await res.json();
-
-        cities=data;
-        input.disabled=false;
-        input.placeholder="Search city...";
-    }catch{
-        input.placeholder="Error loading";
+async function initSearch() {
+    const input = document.getElementById("city-search");
+    try {
+        // Using the comprehensive dr5hn database
+        const res = await fetch("https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries+states+cities.json");
+        const data = await res.json();
+        
+        // Flatten data for instant searching
+        data.forEach(country => {
+            country.states.forEach(state => {
+                state.cities.forEach(city => {
+                    flatCities.push({
+                        n: city.name,
+                        s: state.name,
+                        c: country.name,
+                        z: city.timezone || country.timezones.zoneName
+                    });
+                });
+            });
+        });
+        input.placeholder = "Search (Goa, Haryana, London...)";
+        input.disabled = false;
+    } catch (e) {
+        input.placeholder = "Search offline mode";
     }
 }
-init();
+initSearch();
 
-let sugg=document.getElementById("suggestions");
-document.getElementById("city-search").addEventListener("input",e=>{
-    let val=e.target.value.toLowerCase();
-    sugg.innerHTML="";
-    if(val.length<2){sugg.style.display="none";return;}
+const cityInput = document.getElementById("city-search");
+const suggBox = document.getElementById("suggestions");
 
-    let m=cities.filter(c=>c.name.toLowerCase().includes(val)).slice(0,5);
-    m.forEach(c=>{
-        let d=document.createElement("div");
-        d.textContent=c.name;
-        d.onclick=()=>{loc=c.name;sugg.style.display="none";};
-        sugg.appendChild(d);
-    });
-    sugg.style.display="block";
+cityInput.addEventListener("input", e => {
+    const val = e.target.value.toLowerCase().trim();
+    suggBox.innerHTML = "";
+    if (val.length < 2) { suggBox.style.display = "none"; return; }
+
+    const matches = flatCities.filter(c => 
+        c.n.toLowerCase().includes(val) || 
+        c.s.toLowerCase().includes(val)
+    ).slice(0, 8);
+
+    if (matches.length > 0) {
+        suggBox.style.display = "block";
+        matches.forEach(m => {
+            const d = document.createElement("div");
+            d.innerHTML = `<strong>${m.n}</strong><small>${m.s}, ${m.c}</small>`;
+            d.onclick = () => {
+                tz = m.z;
+                locName = m.n;
+                cityInput.value = "";
+                suggBox.style.display = "none";
+            };
+            suggBox.appendChild(d);
+        });
+    }
 });
 
-// STOPWATCH
-let swInt,swTime=0;
+// CLOCK TICK
+function tick() {
+    const now = new Date();
+    const options = { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    document.getElementById("clock").textContent = new Intl.DateTimeFormat('en-GB', options).format(now);
+    document.getElementById("date").textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+    document.getElementById("location").textContent = locName;
+}
+setInterval(tick, 1000);
+
+// STOPWATCH (Same logic as yours)
+let swInt, swTime=0;
 function toggleSW(){
     let btn=document.getElementById("swBtn");
     if(btn.textContent==="Start"){
         swInt=setInterval(()=>{
             swTime+=10;
-            let ms=(swTime%1000)/10;
+            let ms=Math.floor((swTime%1000)/10);
             let s=Math.floor(swTime/1000)%60;
             let m=Math.floor(swTime/60000);
-            document.getElementById("sw").textContent=
-                `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
+            document.getElementById("sw").textContent= `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
         },10);
         btn.textContent="Stop";
-    }else{
-        clearInterval(swInt);
-        btn.textContent="Start";
-    }
+    }else{ clearInterval(swInt); btn.textContent="Start"; }
 }
-function resetSW(){swTime=0;document.getElementById("sw").textContent="00:00.00";}
-
-// TIMER
-let tInt,timeLeft=0;
-function startTimer(){
-    let btn=document.getElementById("tBtn");
-
-    if(btn.textContent==="Start"){
-        if(timeLeft===0){
-            let m=document.getElementById("min").value||0;
-            let s=document.getElementById("sec").value||0;
-            timeLeft=m*60+ +s;
-        }
-        tInt=setInterval(()=>{
-            timeLeft--;
-            let m=Math.floor(timeLeft/60);
-            let s=timeLeft%60;
-            document.getElementById("timer").textContent=
-                `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-
-            if(timeLeft<=0){
-                clearInterval(tInt);
-                alert("Time up");
-                btn.textContent="Start";
-            }
-        },1000);
-        btn.textContent="Pause";
-    }else{
-        clearInterval(tInt);
-        btn.textContent="Start";
-    }
-}
-function resetTimer(){
-    clearInterval(tInt);
-    timeLeft=0;
-    document.getElementById("timer").textContent="00:00";
-    document.getElementById("tBtn").textContent="Start";
-}
-
-// ALARM
-let alarms=[];
-function addAlarm(){
-    let t=document.getElementById("alarmTime").value;
-    if(!t)return;
-    alarms.push(t);
-    renderAlarms();
-}
-
-function renderAlarms(){
-    let list=document.getElementById("alarmList");
-    list.innerHTML="";
-    alarms.forEach(a=>{
-        let d=document.createElement("div");
-        d.textContent=a;
-        list.appendChild(d);
-    });
-}
-
-setInterval(()=>{
-    let now=new Date().toLocaleTimeString("en-GB").slice(0,5);
-    alarms.forEach(a=>{
-        if(a===now) alert("Alarm!");
-    });
-},1000);
-
+function resetSW(){ swTime=0; document.getElementById("sw").textContent="00:00.00"; }
 </script>
-
 </body>
 </html>
-```
 
